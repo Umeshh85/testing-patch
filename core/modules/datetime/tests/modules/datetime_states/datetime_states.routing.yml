@@ -1,0 +1,6 @@
+datetime_states.example:
+  path: '/datetime/states-example'
+  defaults:
+    _form: '\Drupal\datetime_states\Form\StateForm'
+  requirements:
+    _access: 'TRUE'
