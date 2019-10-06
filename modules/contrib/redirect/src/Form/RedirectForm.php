@@ -120,18 +120,14 @@ class RedirectForm extends ContentEntityForm {
       // Do nothing, we want to only compare the resulting URLs.
     }
 
-    $parsed_url = UrlHelper::parse(trim($source['path']));
-    $path = isset($parsed_url['path']) ? $parsed_url['path'] : NULL;
-    $query = isset($parsed_url['query']) ? $parsed_url['query'] : NULL;
-    $hash = Redirect::generateHash($path, $query, $form_state->getValue('language')[0]['value']);
-
     // Search for duplicate.
-    $redirects = \Drupal::entityManager()
-      ->getStorage('redirect')
-      ->loadByProperties(['hash' => $hash]);
+    $parsed_url = UrlHelper::parse(trim($source['path']));
+    $path = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+    $query = isset($parsed_url['query']) ? $parsed_url['query'] : [];
+    $language = $form_state->getValue('language')[0]['value'];
+    $redirect = \Drupal::service('redirect.repository')->findMatchingRedirect($path, $query, $language);
 
-    if (!empty($redirects)) {
-      $redirect = array_shift($redirects);
+    if (!empty($redirect)) {
       if ($this->entity->isNew() || $redirect->id() != $this->entity->id()) {
         $form_state->setErrorByName('redirect_source', $this->t('The source path %source is already being redirected. Do you want to <a href="@edit-page">edit the existing redirect</a>?',
           [

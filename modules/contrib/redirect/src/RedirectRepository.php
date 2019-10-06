@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Language\Language;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\redirect\Entity\Redirect;
 use Drupal\redirect\Exception\RedirectLoopException;
 
@@ -68,6 +69,15 @@ class RedirectRepository {
     if ($language != Language::LANGCODE_NOT_SPECIFIED) {
       $hashes[] = Redirect::generateHash($source_path, $query, Language::LANGCODE_NOT_SPECIFIED);
     }
+
+    // The source path might be an alias, so add the source for the alias if it
+    // is. The alias manager will return the source path as is if it's not an
+    // alias, which will lead to a duplicate it in the hashes array, deal with
+    // that too.
+    $alias_language = ($language == Language::LANGCODE_NOT_SPECIFIED) ? NULL : $language;
+    $alias_source = ltrim(\Drupal::service('path.alias_manager')->getPathByAlias('/' . $source_path, $alias_language), '/');
+    $hashes[] = Redirect::generateHash($alias_source, $query, Language::LANGCODE_NOT_SPECIFIED);
+    $hashes = array_unique($hashes);
 
     // Add a hash without the query string if using passthrough querystrings.
     if (!empty($query) && $this->config->get('passthrough_querystring')) {

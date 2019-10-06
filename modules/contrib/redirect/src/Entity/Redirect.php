@@ -8,6 +8,8 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Language\Language;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\link\LinkItemInterface;
 
 /**
@@ -85,9 +87,29 @@ class Redirect extends ContentEntityBase {
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage_controller) {
-    // Get the language code directly from the field as language() might not
-    // be up to date if the language was just changed.
-    $this->set('hash', Redirect::generateHash($this->redirect_source->path, (array) $this->redirect_source->query, $this->get('language')->value));
+    $path = $this->redirect_source->path;
+
+    // Get the language code directly from the field as language() might not be
+    // up to date if the language was just changed.
+    $redirect_language = $this->get('language')->value;
+
+    // Pass the path through the alias manager to convert it to the the alias's
+    // source. If it is not an alias the original value will be returned. Check
+    // for the Redirect's language, then language not specified and finally the
+    // default language for path aliases. We have to try multiple languages as
+    // there is no way to determine what the "correct" alias language might be
+    // without checking all options.
+    /** @var \Drupal\Core\Path\AliasManagerInterface $path_alias_manager */
+    $path_alias_manager = \Drupal::service('path.alias_manager');
+    $path = ltrim($path_alias_manager->getPathByAlias('/' . $path, $redirect_language), '/');
+    if ($path === $this->redirect_source->path) {
+      $path = ltrim($path_alias_manager->getPathByAlias('/' . $path, Language::LANGCODE_NOT_SPECIFIED), '/');
+    }
+    if ($path === $this->redirect_source->path) {
+      $path = ltrim($path_alias_manager->getPathByAlias('/' . $path), '/');
+    }
+
+    $this->set('hash', Redirect::generateHash($path, (array) $this->redirect_source->query, $redirect_language));
   }
 
   /**

@@ -262,6 +262,7 @@ class RedirectUITest extends WebTestBase {
     // Test that changing the path back deletes the first redirect, creates
     // a new one and does not result in a loop.
     $this->drupalPostForm('node/' . $node->id() . '/edit', ['path[0][alias]' => '/node_test_alias'], t('Save'));
+    \Drupal::service('path.alias_manager')->cacheClear();
     $redirect = $this->repository->findMatchingRedirect('node_test_alias', [], Language::LANGCODE_NOT_SPECIFIED);
     $this->assertTrue(empty($redirect));
 

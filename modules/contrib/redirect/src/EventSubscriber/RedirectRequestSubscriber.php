@@ -162,10 +162,21 @@ class RedirectRequestSubscriber implements EventSubscriberInterface {
       if ($this->config->get('passthrough_querystring')) {
         $url->setOption('query', (array) $url->getOption('query') + $request_query);
       }
+
+      // Redirects to path aliases are stored and searched for using the alias's
+      // source (/node/123 vs /foo-bar-path). This can cause redirect loops
+      // because the path processor above may have converted a path alias to a
+      // path source (/foo-bar-path => /node/123) which will trigger a redirect
+      // on the path's valid alias.
+      $redirect_url = $url->setAbsolute()->toString();
+      if ($redirect_url === ($request->getSchemeAndHttpHost() . $request->getRequestUri())) {
+        return;
+      }
+
       $headers = [
         'X-Redirect-ID' => $redirect->id(),
       ];
-      $response = new TrustedRedirectResponse($url->setAbsolute()->toString(), $redirect->getStatusCode(), $headers);
+      $response = new TrustedRedirectResponse($redirect_url, $redirect->getStatusCode(), $headers);
       $response->addCacheableDependency($redirect);
       $event->setResponse($response);
     }

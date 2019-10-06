@@ -159,6 +159,18 @@ class RedirectAPITest extends KernelTestBase {
     else {
       $this->fail('findMatchingRedirect is case sensitive.');
     }
+
+    // Redirects to a path alias should be findable by the alias's source as the
+    // hash is based on the alias's source.
+    \Drupal::service('path.alias_storage')->save('/node', '/node-alias');
+    $redirect = $this->controller->create();
+    $redirect->setSource('node-alias');
+    $redirect->setRedirect('/some-different-url');
+    $redirect->save();
+    $found = $repository->findMatchingRedirect('/node');
+    $message = 'Failed to find a redirect to a path alias by searching for the path source.';
+    $this->assertInstanceOf(Redirect::class, $found, $message);
+    $this->assertEqual($redirect->getHash(), $found->getHash(), $message);
   }
 
   /**
