@@ -187,9 +187,6 @@ entity_reference_selection.default:user:
     include_anonymous:
       type: boolean
       label: 'Include the anonymous user in the matched entities.'
-    include_blocked:
-      type: boolean
-      label: 'Include blocked users in the matched entities.'
 
 field.formatter.settings.user_name:
   type: mapping

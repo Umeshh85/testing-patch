@@ -122,8 +122,6 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface 
     // performed in alter() hooks.
     $elements['#after_build'][] = [get_class($this), 'afterBuild'];
     $elements['#field_name'] = $field_name;
-    $elements['#bundle'] = $this->fieldDefinition->getTargetBundle();
-    $elements['#entity_type'] = $this->fieldDefinition->getTargetEntityTypeId();
     $elements['#field_parents'] = $parents;
     // Enforce the structure of submitted values.
     $elements['#parents'] = array_merge($parents, [$field_name]);

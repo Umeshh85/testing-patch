@@ -32,6 +32,3 @@ block.settings.book_navigation:
     block_mode:
       type: string
       label: 'Block display mode'
-    top_level_title:
-      type: boolean
-      label: 'Use the top-level page title as block title'

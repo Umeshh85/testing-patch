@@ -62,12 +62,10 @@ class SubformStateTest extends UnitTestCase {
    *
    * @param string[] $parents
    * @param string $expected
-   * @param bool $is_processing_input
    */
-  public function testGetValues(array $parents, $expected, $is_processing_input = TRUE) {
+  public function testGetValues(array $parents, $expected) {
     $parent_form_state = new FormState();
     $parent_form_state->setValues($this->formStateValues);
-    $parent_form_state->setProcessInput($is_processing_input);
 
     $subform = NestedArray::getValue($this->parentForm, $parents);
     $subform_state = SubformState::createForSubform($subform, $this->parentForm, $parent_form_state);
@@ -75,10 +73,9 @@ class SubformStateTest extends UnitTestCase {
     $this->assertSame($expected, $subform_state_values);
 
     // Modify the retrieved values and confirm they are modified by reference in
-    // the parent form state when input is being processed.
+    // the parent form state.
     $subform_state_values['fish'] = 'Jim';
-    $subform_expected = $is_processing_input ? $subform_state_values : [];
-    $this->assertSame($subform_expected, $subform_state->getValues());
+    $this->assertSame($subform_state_values, $subform_state->getValues());
   }
 
   /**
@@ -89,11 +86,6 @@ class SubformStateTest extends UnitTestCase {
     $data['exist'] = [
       ['dog'],
       $this->formStateValues['dog'],
-    ];
-    $data['not_processing_input'] = [
-      ['dog'],
-      [],
-      FALSE,
     ];
 
     return $data;
@@ -138,7 +130,6 @@ class SubformStateTest extends UnitTestCase {
   public function testGetValue($parents, $key, $expected, $default = NULL) {
     $parent_form_state = new FormState();
     $parent_form_state->setValues($this->formStateValues);
-    $parent_form_state->setProcessInput();
 
     $subform = NestedArray::getValue($this->parentForm, $parents);
     $subform_state = SubformState::createForSubform($subform, $this->parentForm, $parent_form_state);
@@ -197,7 +188,6 @@ class SubformStateTest extends UnitTestCase {
   public function testSetValues($parents, $new_values, $expected) {
     $parent_form_state = new FormState();
     $parent_form_state->setValues($this->formStateValues);
-    $parent_form_state->setProcessInput();
 
     $subform = NestedArray::getValue($this->parentForm, $parents);
     $subform_state = SubformState::createForSubform($subform, $this->parentForm, $parent_form_state);

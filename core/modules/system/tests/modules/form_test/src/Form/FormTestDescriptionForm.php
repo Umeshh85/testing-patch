@@ -25,34 +25,26 @@ class FormTestDescriptionForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $types = ['textfield', 'datetime'];
+    $form['form_textfield_test_description_before'] = [
+      '#type' => 'textfield',
+      '#title' => 'Textfield test for description before element',
+      '#description' => 'Textfield test for description before element',
+      '#description_display' => 'before',
+    ];
 
-    foreach ($types as $type) {
+    $form['form_textfield_test_description_after'] = [
+      '#type' => 'textfield',
+      '#title' => 'Textfield test for description after element',
+      '#description' => 'Textfield test for description after element',
+      '#description_display' => 'after',
+    ];
 
-      $form['form_' . $type . '_test_description_before'] = [
-        '#type' => $type,
-        '#title' => ucfirst($type) . ' test for description before element',
-        '#description' => 'Textfield test for description before element',
-        '#description_display' => 'before',
-        '#default_value' => '',
-      ];
-
-      $form['form_' . $type . '_test_description_after'] = [
-        '#type' => $type,
-        '#title' => ucfirst($type) . ' test for description after element',
-        '#description' => 'Textfield test for description after element',
-        '#description_display' => 'after',
-        '#default_value' => '',
-      ];
-
-      $form['form_' . $type . '_test_description_invisible'] = [
-        '#type' => $type,
-        '#title' => ucfirst($type) . ' test for visually-hidden description',
-        '#description' => ucfirst($type) . ' test for visually-hidden description',
-        '#description_display' => 'invisible',
-        '#default_value' => '',
-      ];
-    }
+    $form['form_textfield_test_description_invisible'] = [
+      '#type' => 'textfield',
+      '#title' => 'Textfield test for visually-hidden description',
+      '#description' => 'Textfield test for visually-hidden description',
+      '#description_display' => 'invisible',
+    ];
 
     return $form;
   }

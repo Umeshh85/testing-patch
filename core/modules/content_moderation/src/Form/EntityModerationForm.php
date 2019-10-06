@@ -84,6 +84,11 @@ class EntityModerationForm extends FormBase {
     /** @var \Drupal\workflows\Transition[] $transitions */
     $transitions = $this->validation->getValidTransitions($entity, $this->currentUser());
 
+    // Exclude self-transitions.
+    $transitions = array_filter($transitions, function (Transition $transition) use ($current_state) {
+      return $transition->to()->id() != $current_state;
+    });
+
     $target_states = [];
 
     foreach ($transitions as $transition) {

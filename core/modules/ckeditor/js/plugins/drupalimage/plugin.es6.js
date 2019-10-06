@@ -385,12 +385,12 @@
 
   // Override image2's integration with the official CKEditor link plugin:
   // integrate with the drupallink plugin instead.
-  if (CKEDITOR.plugins.externals.drupallink) {
-    CKEDITOR.plugins.image2.getLinkAttributesParser = () =>
-      CKEDITOR.plugins.drupallink.parseLinkAttributes;
-    CKEDITOR.plugins.image2.getLinkAttributesGetter = () =>
-      CKEDITOR.plugins.drupallink.getLinkAttributes;
-  }
+  CKEDITOR.plugins.image2.getLinkAttributesParser = function() {
+    return CKEDITOR.plugins.drupallink.parseLinkAttributes;
+  };
+  CKEDITOR.plugins.image2.getLinkAttributesGetter = function() {
+    return CKEDITOR.plugins.drupallink.getLinkAttributes;
+  };
 
   // Expose an API for other plugins to interact with drupalimage widgets.
   CKEDITOR.plugins.drupalimage = {

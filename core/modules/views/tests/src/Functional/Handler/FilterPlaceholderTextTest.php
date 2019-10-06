@@ -39,23 +39,23 @@ class FilterPlaceholderTextTest extends ViewTestBase {
     $this->assertEquals('title placeholder', $results[0]->getAttribute('placeholder'));
 
     // Numeric filter that has no placeholders configured.
-    $results = $this->cssSelect('input[name="nid[value]"]');
+    $results = $this->cssSelect('input[name="created[value]"]');
     $this->assertFalse($results[0]->hasAttribute('placeholder'));
-    $results = $this->cssSelect('input[name="nid[min]"]');
+    $results = $this->cssSelect('input[name="created[min]"]');
     $this->assertFalse($results[0]->hasAttribute('placeholder'));
-    $results = $this->cssSelect('input[name="nid[max]"]');
+    $results = $this->cssSelect('input[name="created[max]"]');
     $this->assertFalse($results[0]->hasAttribute('placeholder'));
 
     // Numeric filter that has all placeholders configured.
-    $results = $this->cssSelect('input[name="nid_placeholder[value]"]');
+    $results = $this->cssSelect('input[name="created_with_placeholders[value]"]');
     $this->assertTrue($results[0]->hasAttribute('placeholder'));
-    $this->assertEquals('nid placeholder', $results[0]->getAttribute('placeholder'));
-    $results = $this->cssSelect('input[name="nid_placeholder[min]"]');
+    $this->assertEquals('created placeholder', $results[0]->getAttribute('placeholder'));
+    $results = $this->cssSelect('input[name="created_with_placeholders[min]"]');
     $this->assertTrue($results[0]->hasAttribute('placeholder'));
-    $this->assertEquals('nid min placeholder', $results[0]->getAttribute('placeholder'));
-    $results = $this->cssSelect('input[name="nid_placeholder[max]"]');
+    $this->assertEquals('min placeholder', $results[0]->getAttribute('placeholder'));
+    $results = $this->cssSelect('input[name="created_with_placeholders[max]"]');
     $this->assertTrue($results[0]->hasAttribute('placeholder'));
-    $this->assertEquals('nid max placeholder', $results[0]->getAttribute('placeholder'));
+    $this->assertEquals('max placeholder', $results[0]->getAttribute('placeholder'));
   }
 
 }

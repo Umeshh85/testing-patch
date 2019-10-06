@@ -121,30 +121,10 @@ class ModerationStateWidget extends OptionsSelectWidget implements ContainerFact
     $entity = $items->getEntity();
 
     $workflow = $this->moderationInformation->getWorkflowForEntity($entity);
-    $default = $workflow->getTypePlugin()->getInitialState($entity);
+    $default = $items->get($delta)->value ? $workflow->getTypePlugin()->getState($items->get($delta)->value) : $workflow->getTypePlugin()->getInitialState($entity);
 
-    // If the entity is not new, grab the most recent revision and
-    // load it. The moderation state of the saved revision will be used
-    // to display the current state as well determine the the appropriate
-    // transitions.
-    if (!$entity->isNew()) {
-      $revision_id = $entity->getLoadedRevisionId();
-      $saved_entity = $this->entityTypeManager->getStorage($entity->getEntityTypeId())->loadRevision($revision_id);
-
-      // If the entity allows translations, grab the translated version.
-      if ($saved_entity->getEntityType()->isTranslatable() && $saved_entity->hasTranslation($entity->langcode->value)) {
-        $saved_entity = $saved_entity->getTranslation($entity->langcode->value);
-      }
-      $moderation_state = $saved_entity->moderation_state->value;
-      $default = $moderation_state ? $workflow->getTypePlugin()->getState($moderation_state) : $workflow->getTypePlugin()->getInitialState($saved_entity);
-
-      /** @var \Drupal\workflows\Transition[] $transitions */
-      $transitions = $this->validator->getValidTransitions($saved_entity, $this->currentUser);
-    }
-    else {
-      /** @var \Drupal\workflows\Transition[] $transitions */
-      $transitions = $this->validator->getValidTransitions($entity, $this->currentUser);
-    }
+    /** @var \Drupal\workflows\Transition[] $transitions */
+    $transitions = $this->validator->getValidTransitions($entity, $this->currentUser);
 
     $transition_labels = [];
     $default_value = $items->value;
@@ -196,6 +176,17 @@ class ModerationStateWidget extends OptionsSelectWidget implements ContainerFact
    */
   public static function isApplicable(FieldDefinitionInterface $field_definition) {
     return is_a($field_definition->getClass(), ModerationStateFieldItemList::class, TRUE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    $dependencies = parent::calculateDependencies();
+    if ($workflow = $this->moderationInformation->getWorkflowForEntityTypeAndBundle($this->fieldDefinition->getTargetEntityTypeId(), $this->fieldDefinition->getTargetBundle())) {
+      $dependencies[$workflow->getConfigDependencyKey()][] = $workflow->getConfigDependencyName();
+    }
+    return $dependencies;
   }
 
 }

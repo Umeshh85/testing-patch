@@ -1,8 +1,0 @@
-name: 'Datetime #states test'
-type: module
-description: 'Provides an example demonstrating how form #states affect datetime elements.'
-package: Testing
-version: VERSION
-core: 8.x
-dependencies:
-  - datetime

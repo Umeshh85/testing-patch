@@ -7,4 +7,3 @@ view latest version:
 
 permission_callbacks:
   - \Drupal\content_moderation\Permissions::transitionPermissions
-  - \Drupal\content_moderation\Permissions::perBundleUnpublishedPermissions

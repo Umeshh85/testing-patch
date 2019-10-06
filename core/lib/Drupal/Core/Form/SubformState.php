@@ -98,12 +98,7 @@ class SubformState extends FormStateDecoratorBase implements SubformStateInterfa
    */
   public function &getValues() {
     $exists = NULL;
-    if ($this->isProcessingInput()) {
-      $values = &NestedArray::getValue(parent::getValues(), $this->getParents('#parents'), $exists);
-    }
-    else {
-      @trigger_error("Please don't.", E_USER_DEPRECATED);
-    }
+    $values = &NestedArray::getValue(parent::getValues(), $this->getParents('#parents'), $exists);
     if (!$exists) {
       $values = [];
     }

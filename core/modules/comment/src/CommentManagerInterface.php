@@ -20,11 +20,6 @@ interface CommentManagerInterface {
   const COMMENT_MODE_THREADED = 1;
 
   /**
-   * Maximum thread depth for comments.
-   */
-  const COMMENT_MAX_THREAD_DEPTH = 100;
-
-  /**
    * Utility function to return an array of comment fields.
    *
    * @param string $entity_type_id

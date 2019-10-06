@@ -48,7 +48,7 @@ class DateTimeFieldTest extends DateTestBase {
       // Display creation form.
       $this->drupalGet('entity_test/add');
       $this->assertFieldByName("{$field_name}[0][value][date]", '', 'Date element found.');
-      $this->assertFieldByXPath('//*[@id="edit-' . $field_name . '-wrapper"]/div/label[contains(@class,"js-form-required")]', TRUE, 'Required markup found');
+      $this->assertFieldByXPath('//*[@id="edit-' . $field_name . '-wrapper"]//label[contains(@class,"js-form-required")]', TRUE, 'Required markup found');
       $this->assertNoFieldByName("{$field_name}[0][value][time]", '', 'Time element not found.');
       $this->assertFieldByXPath('//input[@aria-describedby="edit-' . $field_name . '-0-value--description"]', NULL, 'ARIA described-by found');
       $this->assertFieldByXPath('//div[@id="edit-' . $field_name . '-0-value--description"]', NULL, 'ARIA description found');
@@ -113,8 +113,10 @@ class DateTimeFieldTest extends DateTestBase {
             case 'format_type':
               // Verify that a date is displayed. Since this is a date-only
               // field, it is expected to display the time as 00:00:00.
-              $expected = format_date($date->getTimestamp(), $new_value, '', DateTimeItemInterface::STORAGE_TIMEZONE);
-              $expected_iso = format_date($date->getTimestamp(), 'custom', 'Y-m-d\TH:i:s\Z', DateTimeItemInterface::STORAGE_TIMEZONE);
+              /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
+              $date_formatter = $this->container->get('date.formatter');
+              $expected = $date_formatter->format($date->getTimestamp(), $new_value, '', DateTimeItemInterface::STORAGE_TIMEZONE);
+              $expected_iso = $date_formatter->format($date->getTimestamp(), 'custom', 'Y-m-d\TH:i:s\Z', DateTimeItemInterface::STORAGE_TIMEZONE);
               $output = $this->renderTestEntity($id);
               $expected_markup = '<time datetime="' . $expected_iso . '" class="datetime">' . $expected . '</time>';
               $this->assertContains($expected_markup, $output, new FormattableMarkup('Formatted date field using %value format displayed as %expected with %expected_iso attribute in %timezone.', [
@@ -279,8 +281,9 @@ class DateTimeFieldTest extends DateTestBase {
         switch ($setting) {
           case 'format_type':
             // Verify that a date is displayed.
-            $expected = format_date($date->getTimestamp(), $new_value);
-            $expected_iso = format_date($date->getTimestamp(), 'custom', 'Y-m-d\TH:i:s\Z', 'UTC');
+            $date_formatter = $this->container->get('date.formatter');
+            $expected = $date_formatter->format($date->getTimestamp(), $new_value);
+            $expected_iso = $date_formatter->format($date->getTimestamp(), 'custom', 'Y-m-d\TH:i:s\Z', 'UTC');
             $output = $this->renderTestEntity($id);
             $expected_markup = '<time datetime="' . $expected_iso . '" class="datetime">' . $expected . '</time>';
             $this->assertContains($expected_markup, $output, new FormattableMarkup('Formatted date field using %value format displayed as %expected with %expected_iso attribute.', ['%value' => $new_value, '%expected' => $expected, '%expected_iso' => $expected_iso]));

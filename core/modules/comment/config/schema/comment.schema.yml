@@ -1,4 +1,11 @@
 # Schema for the configuration files of the Comment module.
+comment.settings:
+  type: config_object
+  label: 'Comment settings'
+  mapping:
+    log_ip_addresses:
+      type: boolean
+      label: 'Whether to log IP addresses with comments or not.'
 
 field.formatter.settings.comment_default:
   type: mapping
@@ -105,9 +112,6 @@ field.field_settings.comment:
     default_mode:
       type: integer
       label: 'Threading'
-    thread_depth:
-      type: integer
-      label: 'Thread depth'
     per_page:
       type: integer
       label: 'Comments per page'

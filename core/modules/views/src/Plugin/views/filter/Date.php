@@ -2,7 +2,6 @@
 
 namespace Drupal\views\Plugin\views\filter;
 
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -191,72 +190,6 @@ class Date extends NumericFilter {
     // This is safe because we are manually scrubbing the value.
     // It is necessary to do it this way because $value is a formula when using an offset.
     $this->query->addWhereExpression($this->options['group'], "$field $this->operator $value");
-  }
-
-  /**
-   * Override parent method to change input type.
-   */
-  public function buildExposedForm(&$form, FormStateInterface $form_state) {
-    parent::buildExposedForm($form, $form_state);
-
-    // Change the form element to a 'datetime' if the exposed field is
-    // configured for 'date' input.
-    if ($this->value['type'] === 'date') {
-      $field_identifier = $this->options['expose']['identifier'];
-
-      // Modify the form element for the min and max fields if the operator
-      // is exposed or if the operator is set to between or not between.
-      if (in_array($this->operator, ['between', 'not between']) || $this->options['expose']['use_operator']) {
-        $form[$field_identifier . '_wrapper'][$field_identifier]['min']['#type'] = 'datetime';
-        $form[$field_identifier . '_wrapper'][$field_identifier]['max']['#type'] = 'datetime';
-      }
-
-      // If the operator is something other than between/not between,
-      // Modify the date widget accordingly.
-      if ((!in_array($this->operator, ['between', 'not between']))) {
-        // If the operator is exposed, the date field is inside the value
-        // array. See parent method's valueForm for details.
-        if ($this->options['expose']['use_operator']) {
-          $form[$field_identifier . '_wrapper'][$field_identifier]['value']['#type'] = 'datetime';
-        }
-        // If the operator is exposed, the date field is inside the identifier
-        // array directly. See parent method's valueForm for details.
-        elseif (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator_id'])) {
-          $form[$field_identifier]['#type'] = 'datetime';
-        }
-      }
-      if (in_array($this->operator, ['between', 'not between'])) {
-        // Check the element input matches the form structure.
-        $input = $form_state->getUserInput();
-        if (isset($input[$field_identifier], $input[$field_identifier]['min']) &&  !is_array($input[$field_identifier]['min']) && $value = $input[$field_identifier]['min']) {
-          $date = new DrupalDateTime($value);
-          $input[$field_identifier]['min'] = [
-            'date' => $date->format('Y-m-d'),
-            'time' => $date->format('H:i:s'),
-          ];
-        }
-        if (isset($input[$field_identifier], $input[$field_identifier]['max']) &&  !is_array($input[$field_identifier]['max']) && $value = $input[$field_identifier]['max']) {
-          $date = new DrupalDateTime($value);
-          $input[$field_identifier]['max'] = [
-            'date' => $date->format('Y-m-d'),
-            'time' => $date->format('H:i:s'),
-          ];
-        }
-        $form_state->setUserInput($input);
-      }
-      else {
-        // Check the element input matches the form structure.
-        $input = $form_state->getUserInput();
-        if (isset($input[$field_identifier]) && !is_array($input[$field_identifier]) && $value = $input[$field_identifier]) {
-          $date = new DrupalDateTime($value);
-          $input[$field_identifier] = [
-            'date' => $date->format('Y-m-d'),
-            'time' => $date->format('H:i:s'),
-          ];
-        }
-        $form_state->setUserInput($input);
-      }
-    }
   }
 
 }

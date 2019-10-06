@@ -17,16 +17,18 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "view_builder" = "Drupal\entity_test\EntityTestViewBuilder",
  *     "access" = "Drupal\entity_test\EntityTestAccessControlHandler",
  *     "form" = {
- *       "default" = "Drupal\Core\Entity\ContentEntityForm",
- *       "delete" = "Drupal\Core\Entity\EntityDeleteForm"
+ *       "default" = "\Drupal\Core\Entity\ContentEntityForm",
+ *       "delete" = "\Drupal\Core\Entity\EntityDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
  *     },
  *   },
  *   base_table = "entity_test_with_bundle",
+ *   data_table = "entity_test_with_bundle_field_data",
  *   admin_permission = "administer entity_test_with_bundle content",
  *   persistent_cache = FALSE,
+ *   translatable = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "uuid" = "uuid",

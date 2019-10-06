@@ -153,9 +153,9 @@ class TaxonomyIndexTidUiTest extends UITestBase {
     $this->drupalGet('test-filter-taxonomy-index-tid');
     $xpath = $this->xpath('//div[@class="view-content"]//a');
     $this->assertIdentical(2, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node2->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node2->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node3->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node3->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
 
     // Expose the filter.
@@ -173,7 +173,7 @@ class TaxonomyIndexTidUiTest extends UITestBase {
     $this->drupalGet('test-filter-taxonomy-index-tid');
     $xpath = $this->xpath('//div[@class="view-content"]//a');
     $this->assertIdentical(1, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node1->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node1->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
 
     // Set the operator to 'not empty'.
@@ -186,11 +186,11 @@ class TaxonomyIndexTidUiTest extends UITestBase {
     $this->drupalGet('test-filter-taxonomy-index-tid');
     $xpath = $this->xpath('//div[@class="view-content"]//a');
     $this->assertIdentical(3, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node2->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node2->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node3->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node3->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
-    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node4->url()]);
+    $xpath = $this->xpath('//div[@class="view-content"]//a[@href=:href]', [':href' => $node4->toUrl()->toString()]);
     $this->assertIdentical(1, count($xpath));
 
     // Select 'Term ID' as the field to be displayed.
@@ -215,48 +215,6 @@ class TaxonomyIndexTidUiTest extends UITestBase {
     $this->drupalPostForm(NULL, [], t('Update preview'));
     $preview = $this->xpath("//div[@class='view-content']");
     $this->assertTrue(empty($preview), 'No results.');
-  }
-
-  /**
-   * Tests using the TaxonomyIndexTid in a filter group.
-   */
-  public function testFilterGrouping() {
-    $node_type = $this->drupalCreateContentType(['type' => 'page']);
-
-    // Create the tag field itself.
-    $field_name = 'taxonomy_tags';
-    $this->createEntityReferenceField('node', $node_type->id(), $field_name, NULL, 'taxonomy_term');
-
-    // Create 2 nodes: 1 without a term and 2 with different terms.
-    $this->drupalCreateNode();
-    $this->drupalCreateNode([
-      $field_name => [['target_id' => $this->terms[1][0]->id()]],
-    ]);
-    $this->drupalCreateNode([
-      $field_name => [['target_id' => $this->terms[2][0]->id()]],
-    ]);
-    // Create two groups. The first group contains the published filter and set
-    // up the second group as an 'OR' group for two different terms.
-    $view = View::load('test_filter_taxonomy_index_tid');
-    $display =& $view->getDisplay('default');
-    $display['display_options']['filters']['tid']['value'][0] = $this->terms[1][0]->id();
-    $display['display_options']['filters']['tid']['group'] = 2;
-    $display['display_options']['filters']['tid_2'] = $display['display_options']['filters']['tid'];
-    $display['display_options']['filters']['tid_2']['id'] = 'tid_2';
-    $display['display_options']['filters']['tid_2']['value'][0] = $this->terms[2][0]->id();
-    $display['display_options']['filter_groups'] = [
-      'operator' => 'AND',
-      'groups' => [
-        1 => 'AND',
-        2 => 'OR',
-      ],
-    ];
-    $view->save();
-
-    $this->drupalGet('test-filter-taxonomy-index-tid');
-    $xpath = $this->xpath('//div[@class="view-content"]//a');
-    // We expect both nodes with terms but not the node without a term.
-    $this->assertIdentical(2, count($xpath));
   }
 
 }

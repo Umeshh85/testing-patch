@@ -27,9 +27,6 @@ function datetime_field_views_data(FieldStorageConfigInterface $field_storage) {
  *   Field view data or views_field_default_views_data($field_storage) if empty.
  * @param string $column_name
  *   The schema column name with the datetime value.
- * @param string[] $plugin_ids
- *   An associative array of plugin IDs keyed by handler type. Defaults to
- *   "datetime" for all handler types.
  *
  * @return array
  *   The array of field views data with the datetime plugin.
@@ -37,22 +34,16 @@ function datetime_field_views_data(FieldStorageConfigInterface $field_storage) {
  * @see datetime_field_views_data()
  * @see datetime_range_field_views_data()
  */
-function datetime_type_field_views_data_helper(FieldStorageConfigInterface $field_storage, array $data, $column_name, $plugin_ids = []) {
-  $plugin_ids += [
-    'filter' => 'datetime',
-    'argument' => 'datetime',
-    'sort' => 'datetime',
-  ];
-
+function datetime_type_field_views_data_helper(FieldStorageConfigInterface $field_storage, array $data, $column_name) {
   // @todo This code only covers configurable fields, handle base table fields
   //   in https://www.drupal.org/node/2489476.
   $data = empty($data) ? views_field_default_views_data($field_storage) : $data;
   foreach ($data as $table_name => $table_data) {
     // Set the 'datetime' filter type.
-    $data[$table_name][$field_storage->getName() . '_' . $column_name]['filter']['id'] = $plugin_ids['filter'];
+    $data[$table_name][$field_storage->getName() . '_' . $column_name]['filter']['id'] = 'datetime';
 
     // Set the 'datetime' argument type.
-    $data[$table_name][$field_storage->getName() . '_' . $column_name]['argument']['id'] = $plugin_ids['argument'];
+    $data[$table_name][$field_storage->getName() . '_' . $column_name]['argument']['id'] = 'datetime';
 
     // Create year, month, and day arguments.
     $group = $data[$table_name][$field_storage->getName() . '_' . $column_name]['group'];
@@ -76,7 +67,7 @@ function datetime_type_field_views_data_helper(FieldStorageConfigInterface $fiel
         'help' => $help_text,
         'argument' => [
           'field' => $field_storage->getName() . '_' . $column_name,
-          'id' => $plugin_ids['argument'] . '_' . $argument_type,
+          'id' => 'datetime_' . $argument_type,
           'entity_type' => $field_storage->getTargetEntityTypeId(),
           'field_name' => $field_storage->getName(),
         ],
@@ -85,7 +76,7 @@ function datetime_type_field_views_data_helper(FieldStorageConfigInterface $fiel
     }
 
     // Set the 'datetime' sort handler.
-    $data[$table_name][$field_storage->getName() . '_' . $column_name]['sort']['id'] = $plugin_ids['sort'];
+    $data[$table_name][$field_storage->getName() . '_' . $column_name]['sort']['id'] = 'datetime';
   }
 
   return $data;

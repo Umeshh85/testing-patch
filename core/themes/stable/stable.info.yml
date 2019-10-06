@@ -2,7 +2,7 @@ name: Stable
 type: theme
 description: A default base theme using Drupal 8.0.0's core markup and CSS.
 package: Core
-version: VERSION
+# version: VERSION
 core: 8.x
 base theme: false
 hidden: true
@@ -134,10 +134,24 @@ libraries-override:
       theme:
         css/language.admin.css: css/language/language.admin.css
 
+  layout_builder/drupal.layout_builder:
+    css:
+      theme:
+        css/layout-builder.css: css/layout_builder/layout-builder.css
+
   locale/drupal.locale.admin:
     css:
       component:
         css/locale.admin.css: css/locale/locale.admin.css
+
+  media/oembed.formatter:
+    css:
+      component:
+        css/oembed.formatter.css: css/media/oembed.formatter.css
+  media/oembed.frame:
+    css:
+      component:
+        css/oembed.frame.css: css/media/oembed.frame.css
 
   menu_ui/drupal.menu_ui.adminforms:
     css:
@@ -284,3 +298,8 @@ libraries-override:
       theme:
         css/views_ui.admin.theme.css: css/views_ui/views_ui.admin.theme.css
         css/views_ui.contextual.css: css/views_ui/views_ui.contextual.css
+
+# Information added by Drupal.org packaging script on 2019-10-02
+version: '8.7.8'
+project: 'drupal'
+datestamp: 1570044520

@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\content_moderation\Functional;
 
-use Drupal\simpletest\ContentTypeCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\content_moderation\Traits\ContentModerationTestTrait;
+use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 
 /**
  * Test revision revert.
@@ -97,40 +97,6 @@ class ModerationRevisionRevertTest extends BrowserTestBase {
     // Check the node has been saved.
     $this->assertSession()
       ->pageTextContains('moderated_bundle First draft node has been updated');
-
-    // Now revert and set to a published state.
-    $this->drupalGet($revision_url);
-    $edit = ['new_state' => 'published'];
-    $this->drupalPostForm(NULL, $edit, t('Revert'));
-    $node = $this->getNodeByTitle('First draft node');
-    $this->assertTrue($node->isPublished());
-
-    // Revert as draft and then publish new draft.
-    $this->drupalGet($revision_url);
-    $edit = ['new_state' => 'draft'];
-    $this->drupalPostForm(NULL, $edit, t('Revert'));
-    /** @var \Drupal\node\NodeInterface $revision */
-    $revision = \Drupal::entityTypeManager()->getStorage('node')->loadRevision(6);
-    $this->assertFalse($revision->isPublished());
-    $this->clickLink(t('Set as current revision'));
-    $edit = ['new_state' => 'published'];
-    $this->drupalPostForm(NULL, $edit, t('Revert'));
-    $revision = \Drupal::entityTypeManager()->getStorage('node')->loadRevision(7);
-    $this->assertTrue($revision->isPublished());
-
-    // Test as a user without transition permissions. This will cause the
-    // reverted revision to be in a draft state.
-    $user = $this->createUser([
-      'view all revisions',
-      'administer nodes',
-      'revert all revisions',
-    ]);
-    $this->drupalLogin($user);
-    $this->drupalGet('node/1/revisions/5/revert');
-    $this->assertSession()->pageTextNotContains(t('Revert and set to'));
-    $this->drupalPostForm(NULL, [], t('Revert'));
-    $revision = \Drupal::entityTypeManager()->getStorage('node')->loadRevision(8);
-    $this->assertEquals('draft', $revision->moderation_state->value);
   }
 
 }

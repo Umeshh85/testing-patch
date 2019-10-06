@@ -120,67 +120,6 @@ class CommentThreadingTest extends CommentTestBase {
   }
 
   /**
-   * Test comment indenting.
-   */
-  public function testCommentMaxThreadDepth() {
-    // Set comments to have a subject with preview disabled.
-    $thread_depth = 2;
-    $this->setCommentPreview(DRUPAL_DISABLED);
-    $this->setCommentForm(TRUE);
-    $this->setCommentSubject(TRUE);
-    $this->setCommentSettings('default_mode', CommentManagerInterface::COMMENT_MODE_THREADED, 'Comment paging changed.');
-    $this->setCommentSettings('thread_depth', $thread_depth, 'Thread depth changed.');
-
-    // Create a node.
-    $this->drupalLogin($this->webUser);
-    $this->node = $this->drupalCreateNode(['type' => 'article', 'promote' => 1, 'uid' => $this->webUser->id()]);
-
-    // Create first comment.
-    $comments = [];
-    $comment_expected_indents = [];
-    $subject_text = $this->randomMachineName();
-    $comment_text = $this->randomMachineName();
-    $comments[] = $this->postComment($this->node, $comment_text, $subject_text, TRUE);
-    $comment_expected_indents[] = 0;
-
-    // Create enough comments to be one greater than the max thread depth. Each new
-    // comment should be a reply to the previous created comment.
-    for ($i = 0; $i < $thread_depth + 1; $i++) {
-      $this->drupalGet('comment/reply/node/' . $this->node->id() . '/comment/' . $comments[$i]->id());
-      $comments[] = $this->postComment(NULL, $this->randomMachineName(), '', TRUE);
-
-      // Each comment should be indented one over from its parent until the
-      // comment depth exceeds the user defined thread_depth. From that point
-      // on, each new comment that is a reply to a comment that is at
-      // thread_depth will not be indented over from its parent.
-      if ($i >= $thread_depth) {
-        $comment_expected_indents[] = 0;
-      }
-      else {
-        $comment_expected_indents[] = 1;
-      }
-    }
-
-    /** @var \Drupal\comment\CommentViewBuilder $view_builder */
-    $view_builder = $this->container->get('entity.manager')->getViewBuilder('comment');
-
-    // Build render array for all created comments and replies.
-    $render_array = $view_builder->viewMultiple($comments, 'default');
-    $updated_render_array = $view_builder->buildMultiple($render_array);
-
-    // Confirm comment indent is adjusted when replies go past thread_depth.
-    for ($i = 0; $i < count($comments); $i++) {
-      if ($i === ($thread_depth + 1)) {
-        $error_message = 'Comment indent should have been adjusted since thread depth exceeds thread_depth value';
-      }
-      else {
-        $error_message = 'Comment indent does not match expected indent level';
-      }
-      $this->assertEquals($comment_expected_indents[$i], $updated_render_array[$i]['#comment_indent'], $error_message);
-    }
-  }
-
-  /**
    * Asserts that the link to the specified parent comment is present.
    *
    * @param int $cid
@@ -196,7 +135,7 @@ class CommentThreadingTest extends CommentTestBase {
     //     <a href="...comment-1"></a>
     //   </p>
     //  </article>
-    $pattern = "//a[@id='comment-$cid']/following-sibling::article//p[contains(@class, 'parent')]//a[contains(@href, 'comment-$pid')]";
+    $pattern = "//article[@id='comment-$cid']//p[contains(@class, 'parent')]//a[contains(@href, 'comment-$pid')]";
 
     $this->assertFieldByXpath($pattern, NULL, format_string(
       'Comment %cid has a link to parent %pid.',
@@ -220,7 +159,7 @@ class CommentThreadingTest extends CommentTestBase {
     //   <p class="parent"></p>
     //  </article>
 
-    $pattern = "//a[@id='comment-$cid']/following-sibling::article//p[contains(@class, 'parent')]";
+    $pattern = "//article[@id='comment-$cid']//p[contains(@class, 'parent')]";
     $this->assertNoFieldByXpath($pattern, NULL, format_string(
       'Comment %cid does not have a link to a parent.',
       [

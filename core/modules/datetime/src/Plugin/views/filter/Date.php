@@ -4,7 +4,6 @@ namespace Drupal\datetime\Plugin\views\filter;
 
 use Drupal\Component\Datetime\DateTimePlus;
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
@@ -178,40 +177,6 @@ class Date extends NumericDate implements ContainerFactoryPluginInterface {
     }
 
     return $origin_offset;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildExposedForm(&$form, FormStateInterface $form_state) {
-    parent::buildExposedForm($form, $form_state);
-
-    // Hide the date_time_element for date only fields.
-    if ($this->fieldStorageDefinition->get('settings')['datetime_type'] === DateTimeItem::DATETIME_TYPE_DATE) {
-      $field_identifier = $this->options['expose']['identifier'];
-
-      // If the operator is between/not between or if the operator is exposed,
-      // modify the form element to remove the time part.
-      if (in_array($this->operator, ['between', 'not between']) || $this->options['expose']['use_operator']) {
-        $form[$field_identifier . '_wrapper'][$field_identifier]['min']['#date_time_element'] = 'none';
-        $form[$field_identifier . '_wrapper'][$field_identifier]['max']['#date_time_element'] = 'none';
-      }
-
-      // If the operator is something other than between/not between,
-      // Modify the date widget accordingly.
-      if ((!in_array($this->operator, ['between', 'not between']))) {
-        // If the operator is exposed, the date field is inside the value
-        // array. See parent method's valueForm for details.
-        if ($this->options['expose']['use_operator']) {
-          $form[$field_identifier . '_wrapper'][$field_identifier]['value']['#date_time_element'] = 'none';
-        }
-        // If the operator is exposed, the date field is inside the identifier
-        // array directly. See parent method's valueForm for details.
-        elseif (empty($this->options['expose']['use_operator']) || empty($this->options['expose']['operator_id'])) {
-          $form[$field_identifier]['#date_time_element'] = 'none';
-        }
-      }
-    }
   }
 
 }

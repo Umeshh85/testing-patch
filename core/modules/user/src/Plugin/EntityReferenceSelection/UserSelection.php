@@ -5,7 +5,10 @@ namespace Drupal\user\Plugin\EntityReferenceSelection;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Database\Query\SelectInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -34,13 +37,6 @@ class UserSelection extends DefaultSelection {
   protected $connection;
 
   /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
    * Constructs a new UserSelection object.
    *
    * @param array $configuration
@@ -49,20 +45,25 @@ class UserSelection extends DefaultSelection {
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info service.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityManagerInterface $entity_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, Connection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_manager, $module_handler, $current_user);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, Connection $connection, EntityFieldManagerInterface $entity_field_manager = NULL, EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, EntityRepositoryInterface $entity_repository = NULL) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $module_handler, $current_user, $entity_field_manager, $entity_type_bundle_info, $entity_repository);
 
     $this->connection = $connection;
-    $this->userStorage = $entity_manager->getStorage('user');
   }
 
   /**
@@ -76,7 +77,10 @@ class UserSelection extends DefaultSelection {
       $container->get('entity.manager'),
       $container->get('module_handler'),
       $container->get('current_user'),
-      $container->get('database')
+      $container->get('database'),
+      $container->get('entity_field.manager'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('entity.repository')
     );
   }
 
@@ -89,7 +93,6 @@ class UserSelection extends DefaultSelection {
         'type' => '_none',
         'role' => NULL,
       ],
-      'include_blocked' => TRUE,
       'include_anonymous' => TRUE,
     ] + parent::defaultConfiguration();
   }
@@ -100,23 +103,10 @@ class UserSelection extends DefaultSelection {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $configuration = $this->getConfiguration();
 
-    $form['include_blocked'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Include blocked users'),
-      '#default_value' => !empty($configuration['include_blocked']),
-      '#description' => $this->t('If this option is not set, only users with the <em>administer users</em> permission may reference blocked users.'),
-    ];
-
     $form['include_anonymous'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Include the anonymous user.'),
       '#default_value' => $configuration['include_anonymous'],
-      // If inactive users are not included, then it's not possible to get the Anonymous user either.
-      '#states' => [
-        'visible' => [
-          ':input[name="settings[handler_settings][include_blocked]"]' => ['checked' => TRUE],
-        ],
-      ],
     ];
 
     // Add user specific filter options.
@@ -179,7 +169,7 @@ class UserSelection extends DefaultSelection {
 
     // Adding the permission check is sadly insufficient for users: core
     // requires us to also know about the concept of 'blocked' and 'active'.
-    if (!$configuration['include_blocked'] || !$this->currentUser->hasPermission('administer users')) {
+    if (!$this->currentUser->hasPermission('administer users')) {
       $query->condition('status', 1);
     }
     return $query;

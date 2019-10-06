@@ -234,7 +234,6 @@ class EntityReferenceSelectionAccessTest extends KernelTestBase {
       'target_type' => 'user',
       'handler' => 'default',
       'target_bundles' => NULL,
-      'include_blocked' => TRUE,
       'include_anonymous' => TRUE,
     ];
 
@@ -271,7 +270,7 @@ class EntityReferenceSelectionAccessTest extends KernelTestBase {
         $account = $values;
       }
       $users[$key] = $account;
-      $user_labels[$key] = Html::escape($account->getUsername());
+      $user_labels[$key] = Html::escape($account->getAccountName());
     }
 
     // Test as a non-admin.
@@ -384,26 +383,6 @@ class EntityReferenceSelectionAccessTest extends KernelTestBase {
       ],
     ];
     $this->assertReferenceable($selection_options, $referenceable_tests, 'User handler (does not include anonymous)');
-
-    // Even users with 'administer users' permission cannot view blocked users if
-    // the 'include_blocked' selection option is FALSE.
-    \Drupal::currentUser()->setAccount($users['admin']);
-    $selection_options['include_blocked'] = FALSE;
-    $referenceable_tests = [
-      [
-        'arguments' => [
-          [NULL, 'CONTAINS'],
-        ],
-        'result' => [
-          'user' => [
-            $users['admin']->id() => $user_labels['admin'],
-            $users['non_admin']->id() => $user_labels['non_admin'],
-          ],
-        ],
-      ],
-    ];
-    $this->assertReferenceable($selection_options, $referenceable_tests, 'User handler (does not include blocked)');
-
   }
 
   /**

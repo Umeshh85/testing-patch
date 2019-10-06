@@ -5,7 +5,6 @@ namespace Drupal\views\Plugin\views\display;
 use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableDependencyInterface;
@@ -1751,7 +1750,6 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
           '#title' => $this->t('Custom URL'),
           '#default_value' => $this->getOption('link_url'),
           '#description' => $description,
-          '#maxlength' => 512,
           '#states' => [
             'visible' => [
               ':input[name="link_display"]' => ['value' => 'custom_url'],
@@ -2072,81 +2070,38 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    * {@inheritdoc}
    */
   public function renderMoreLink() {
-    if ($this->isMoreEnabled()
-      && ($this->useMoreAlways() || (!empty($this->view->pager) && $this->view->pager->hasMoreRecords()))
-      && $url = $this->getMoreUrl()) {
-
-      // Merge the exposed query parameters.
-      if (!empty($this->view->exposed_raw_input)) {
-        $url->mergeOptions(['query' => $this->view->exposed_raw_input]);
+    if ($this->isMoreEnabled() && ($this->useMoreAlways() || (!empty($this->view->pager) && $this->view->pager->hasMoreRecords()))) {
+      // If the user has supplied a custom "More" link path, replace any
+      // argument tokens and use that for the URL.
+      if ($this->getOption('link_display') == 'custom_url' && $override_path = $this->getOption('link_url')) {
+        $tokens = $this->getArgumentsTokens();
+        $path = $this->viewsTokenReplace($override_path, $tokens);
+        // @todo Views should expect and store a leading /. See:
+        //   https://www.drupal.org/node/2423913
+        $url = Url::fromUserInput('/' . $path);
+      }
+      // Otherwise, use the URL for the display.
+      else {
+        $url = $this->view->getUrl(NULL, $this->display['id']);
       }
 
-      return [
-        '#type' => 'more_link',
-        '#url' => $url,
-        '#title' => $this->useMoreText(),
-        '#view' => $this->view,
-      ];
+      // If a URL is available (either from the display or a custom path),
+      // render the "More" link.
+      if ($url) {
+        $url_options = [];
+        if (!empty($this->view->exposed_raw_input)) {
+          $url_options['query'] = $this->view->exposed_raw_input;
+        }
+        $url->setOptions($url_options);
+
+        return [
+          '#type' => 'more_link',
+          '#url' => $url,
+          '#title' => $this->useMoreText(),
+          '#view' => $this->view,
+        ];
+      }
     }
-  }
-
-  /**
-   * Gets the more url for this view.
-   *
-   * Uses the custom url if their is one, otherwise the display path.
-   *
-   * @return \Drupal\Core\Url
-   *   The more link as Url object.
-   */
-  protected function getMoreUrl() {
-    $path = $this->getOption('link_url');
-
-    // Return the display URL if there is no custom url.
-    if ($this->getOption('link_display') !== 'custom_url' || empty($path)) {
-      return $this->view->getUrl(NULL, $this->display['id']);
-    }
-
-    $options = $this->replacePathTokens($path);
-
-    $path = $options['path'];
-    unset($options['path']);
-
-    // Create url.
-    // @todo Views should expect and store a leading /. See:
-    //   https://www.drupal.org/node/2423913
-    return UrlHelper::isExternal($path) ? Url::fromUri($path, $options) : Url::fromUserInput('/' . ltrim($path, '/'), $options);
-  }
-
-  /**
-   * Replaces the tokens in the given path.
-   *
-   * @param string $path
-   *   The internal path or external URL string to replace the tokens in.
-   *
-   * @return array
-   *   The parsed given path with its tokens replaced.
-   *
-   * @see UrlHelper::parse()
-   */
-  protected function replacePathTokens($path) {
-    $parts = UrlHelper::parse($path);
-    $tokens = $this->getArgumentsTokens();
-
-    // If there are no tokens there is nothing else to do.
-    if (empty($tokens)) {
-      return $parts;
-    }
-
-    $parts['path'] = $this->viewsTokenReplace($parts['path'], $tokens);
-    $parts['fragment'] = $this->viewsTokenReplace($parts['fragment'], $tokens);
-
-    // Handle query parameters where the key in the form of array.
-    // For example, f[0] for facets.
-    array_walk_recursive($parts['query'], function (&$value) use ($tokens) {
-      $value = $this->viewsTokenReplace($value, $tokens);
-    });
-
-    return $parts;
   }
 
   /**
@@ -2521,6 +2476,14 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
         if (!empty($result) && is_array($result)) {
           $errors = array_merge($errors, $result);
         }
+      }
+    }
+
+    // Validate extenders.
+    foreach ($this->extenders as $extender) {
+      $result = $extender->validate();
+      if (!empty($result) && is_array($result)) {
+        $errors = array_merge($errors, $result);
       }
     }
 

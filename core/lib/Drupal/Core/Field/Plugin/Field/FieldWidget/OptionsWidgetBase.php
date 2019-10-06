@@ -2,7 +2,6 @@
 
 namespace Drupal\Core\Field\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
@@ -44,25 +43,6 @@ abstract class OptionsWidgetBase extends WidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    // Add form object to field definition.
-    $field_definition = $items->getFieldDefinition();
-
-    // Put entity into settings.
-    $form_object = $form_state->getFormObject();
-    if (isset($form_object) && $form_object instanceof EntityForm) {
-      $entity = $form_object->getEntity();
-      if (isset($entity)) {
-        $storage = $form_state->getStorage();
-        if (isset($storage['group'])) {
-          $entity->parent_group = $storage['group'];
-        }
-
-        $setting = $field_definition->getSetting('handler_settings');
-        $setting['entity'] = $entity;
-        $field_definition->setSetting('handler_settings', $setting);
-      }
-    }
-
     // Prepare some properties for the child methods to build the actual form
     // element.
     $this->required = $element['#required'];

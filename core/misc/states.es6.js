@@ -159,24 +159,6 @@
       // The "reference" variable is a comparison function.
       return reference(value);
     },
-    Array(reference, value) {
-      // Make sure value is an array.
-      if (!Array.isArray(value)) {
-        return false;
-      }
-      // Convert all comparisons to strings for indexOf to work with integers
-      // comparing to strings.
-      reference = reference.map(String);
-      value = value.map(String);
-      // We iterate through each value provided in the reference. If all of them
-      // exist in value array, we return true. Otherwise return false.
-      for (var [key, referenceValue] of Object.entries(reference)) {
-        if (value.indexOf(reference[key]) === -1) {
-          return false;
-        }
-      }
-      return true;
-    },
     Number(reference, value) {
       // If "reference" is a number and "value" is a string, then cast
       // reference as a string before applying the strict comparison in
@@ -225,10 +207,6 @@
 
         // Make sure the event we just bound ourselves to is actually fired.
         new states.Trigger({ selector, state });
-
-        // Reevaluate conditions and trigger to be sure default value like
-        // null is handled.
-        this.reevaluate();
       });
     },
 

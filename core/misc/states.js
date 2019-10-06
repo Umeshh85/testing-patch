@@ -4,7 +4,6 @@
 * https://www.drupal.org/node/2815083
 * @preserve
 **/
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 (function ($, Drupal) {
   var states = {
@@ -80,57 +79,6 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
     Function: function Function(reference, value) {
       return reference(value);
     },
-    Array: function (_Array) {
-      function Array(_x, _x2) {
-        return _Array.apply(this, arguments);
-      }
-
-      Array.toString = function () {
-        return _Array.toString();
-      };
-
-      return Array;
-    }(function (reference, value) {
-      if (!Array.isArray(value)) {
-        return false;
-      }
-
-      reference = reference.map(String);
-      value = value.map(String);
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Object.entries(reference)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _ref = _step.value;
-
-          var _ref2 = _slicedToArray(_ref, 2);
-
-          var key = _ref2[0];
-          var referenceValue = _ref2[1];
-
-          if (value.indexOf(reference[key]) === -1) {
-            return false;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      return true;
-    }),
     Number: function Number(reference, value) {
       return typeof value === 'string' ? _compare2(reference.toString(), value) : _compare2(reference, value);
     }
@@ -158,8 +106,6 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
         });
 
         new states.Trigger({ selector: selector, state: state });
-
-        _this2.reevaluate();
       });
     },
     compare: function compare(reference, selector, state) {
@@ -399,9 +345,6 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
   $document.on('state:disabled', function (e) {
     if (e.trigger) {
       $(e.target).prop('disabled', e.value).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggleClass('form-disabled', e.value).find('select, input, textarea').prop('disabled', e.value);
-      // A complex form element, like 'datetime' (one made up of multiple
-      // sub-elements) may have a label for the element as a whole.
-      $(e.target).closest('.js-complex-form-item').toggleClass('form-disabled', e.value);
     }
   });
 
@@ -410,31 +353,19 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
       if (e.value) {
         var label = 'label' + (e.target.id ? '[for=' + e.target.id + ']' : '');
         var $label = $(e.target).attr({ required: 'required', 'aria-required': 'true' }).closest('.js-form-item, .js-form-wrapper').find(label);
-        // A complex form element, like 'datetime' (one made up of multiple
-        // sub-elements) may have a label for the element as a whole.
-        var $complexLabel = $(e.target).closest('.js-complex-form-item').children('label');
 
         if (!$label.hasClass('js-form-required').length) {
           $label.addClass('js-form-required form-required');
         }
-        if (!$complexLabel.hasClass('js-form-required').length) {
-          $complexLabel.addClass('js-form-required form-required');
-        }
       } else {
         $(e.target).removeAttr('required aria-required').closest('.js-form-item, .js-form-wrapper').find('label.js-form-required').removeClass('js-form-required form-required');
-        $(e.target).closest('.js-complex-form-item').children('label').removeClass('js-form-required form-required');
       }
     }
   });
 
   $document.on('state:visible', function (e) {
     if (e.trigger) {
-      if (!$(e.target).hasClass('js-complex-form-item')) {
-        $(e.target).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggle(e.value);
-      }
-      else {
-        $(e.target).toggle(e.value);
-      }
+      $(e.target).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggle(e.value);
     }
   });
 

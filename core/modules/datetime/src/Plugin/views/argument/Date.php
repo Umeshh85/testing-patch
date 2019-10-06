@@ -2,7 +2,7 @@
 
 namespace Drupal\datetime\Plugin\views\argument;
 
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\views\FieldAPIHandlerTrait;
@@ -38,8 +38,8 @@ class Date extends NumericDate {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, DateFormatterInterface $date_formatter) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $route_match, $date_formatter);
 
     $definition = $this->getFieldStorageDefinition();
     if ($definition->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE) {
@@ -47,63 +47,6 @@ class Date extends NumericDate {
       // as date-only.
       $this->calculateOffset = FALSE;
     }
-  }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['operator'] = ['default' => '='];
-    $options['formula'] = [
-      'contains' => [
-        'operator' => ['default' => '='],
-      ],
-    ];
-    return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
-    parent::buildOptionsForm($form, $form_state);
-
-    $form['formula'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Formula'),
-    ];
-    $form['formula']['operator'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Operator'),
-      '#options' => [
-        '<' => $this->t('Is less than'),
-        '<=' => $this->t('Is less than or equal to'),
-        '=' => $this->t('Is equal to'),
-        '>=' => $this->t('Is greater than or equal to'),
-        '>' => $this->t('Is greater than'),
-      ],
-      '#default_value' => $this->options['formula']['operator'],
-      '#required' => TRUE,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * This identical to the original query method except for the configurable
-   * operator.
-   */
-  public function query($group_by = FALSE) {
-    $this->ensureMyTable();
-    // Now that our table is secure, get our formula.
-    $placeholder = $this->placeholder();
-    $formula = $this->getFormula() . " {$this->options['formula']['operator']} " . $placeholder;
-    $placeholders = [
-      $placeholder => $this->argument,
-    ];
-    $this->query->addWhere(0, $formula, $placeholders, 'formula');
   }
 
   /**

@@ -3,8 +3,8 @@
 namespace Drupal\Tests\book\Unit;
 
 use Drupal\book\BookManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * @coversDefaultClass \Drupal\book\BookManager
@@ -55,67 +55,14 @@ class BookManagerTest extends UnitTestCase {
   protected $bookOutlineStorage;
 
   /**
-   * The mocked form state
-   *
-   * @var \Drupal\Core\Form\FormState
-   */
-  protected $form_state;
-
-  /**
-   * The mocked node Interface.
-   *
-   * @var \Drupal\node\NodeInterface
-   */
-  protected $node;
-
-  /**
-   * The mocked User
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected $account;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->entityManager = $this->getMock('Drupal\Core\Entity\EntityManagerInterface');
-    $book_id = [
-      'nid' => 'new',
-      'has_children' => 0,
-      'original_bid' => 0,
-      'parent_depth_limit' => 0,
-      'bid' => 0,
-      'pid' => 0,
-      'weight' => 0,
-      'parent_depth_limit' => 8,
-      'options' => [],
-    ];
-    $this->form_state = $this->getMockBuilder('Drupal\Core\Form\FormState')
-      ->disableOriginalConstructor()->disableOriginalConstructor()
-      ->setMethods(['hasValue', 'getValue'])->getMock();
-    $this->form_state->expects($this->any())
-      ->method('getValue')
-      ->willReturn($book_id);
-    $this->node = $this->getMockBuilder('Drupal\node\NodeInterface')
-      ->disableOriginalConstructor()->getMock();
-    $this->node->book = $book_id;
-    $this->account = $this->getMockBuilder('Drupal\user\Entity\User')
-      ->disableOriginalConstructor()->getMock();
+    $this->entityManager = $this->createMock(EntityTypeManagerInterface::class);
     $this->translation = $this->getStringTranslationStub();
-    $config = [
-      'book.settings' => [
-        'allowed_types' => [
-          'page'
-        ]
-      ]
-    ];
-    $this->configFactory = $this->getConfigFactoryStub($config);
+    $this->configFactory = $this->getConfigFactoryStub([]);
     $this->bookOutlineStorage = $this->getMock('Drupal\book\BookOutlineStorageInterface');
     $this->renderer = $this->getMock('\Drupal\Core\Render\RendererInterface');
-    $container = new ContainerBuilder();
-    $container->set('config.factory', $this->configFactory);
-    \Drupal::setContainer($container);
     $this->bookManager = new BookManager($this->entityManager, $this->translation, $this->configFactory, $this->bookOutlineStorage, $this->renderer);
   }
 
@@ -166,32 +113,6 @@ class BookManagerTest extends UnitTestCase {
         ['depth' => 3, 'p1' => 10, 'p2' => 11, 'p3' => 12] + $empty,
       ],
     ];
-  }
-
-  /**
-   * Testing the Book Outline form element in node add page form.
-   * When the Book setting is enabled for the Content Type 'Page'.
-   */
-  public function testAddFormElementsNodeAddWithBook() {
-    $form = [];
-    $this->node->expects($this->any())
-      ->method('getType')
-      ->willReturn('page');
-    $addform = $this->bookManager->addFormElements($form, $this->form_state, $this->node, $this->account);
-    $this->assertArrayHasKey('book', $addform);
-  }
-
-  /**
-   * Testing the Book Outline form element in node add article form.
-   * When the Book setting is not enabled for the Content Type 'Article'
-   */
-  public function testAddFormElementsNodeAddWithoutBook() {
-    $form = [];
-    $this->node->expects($this->any())
-      ->method('getType')
-      ->willReturn('artilce');
-    $addform = $this->bookManager->addFormElements($form, $this->form_state, $this->node, $this->account);
-    $this->assertArrayNotHasKey('book', $addform);
   }
 
 }

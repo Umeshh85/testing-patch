@@ -161,12 +161,6 @@ class TextFormat extends RenderElement {
       }
     }
 
-    // Set the states property for the filter format element from the value
-    // of the element if it exists.
-    if (isset($element['value']['#states'])) {
-      $element['format']['#states'] = $element['value']['#states'];
-    }
-
     // Prepare text format guidelines.
     $element['format']['guidelines'] = [
       '#type' => 'container',

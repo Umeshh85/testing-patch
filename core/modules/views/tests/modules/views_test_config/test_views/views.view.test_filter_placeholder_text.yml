@@ -207,10 +207,10 @@ display:
           entity_type: node
           entity_field: title
           plugin_id: string
-        nid:
-          id: nid
+        created:
+          id: created
           table: node_field_data
-          field: nid
+          field: created
           relationship: none
           group_type: group
           admin_label: ''
@@ -219,15 +219,16 @@ display:
             min: ''
             max: ''
             value: ''
+            type: date
           group: 1
           exposed: true
           expose:
-            operator_id: nid_op
-            label: ID
+            operator_id: created_op
+            label: 'Authored on'
             description: ''
             use_operator: true
-            operator: nid_op
-            identifier: nid
+            operator: created_op
+            identifier: created
             required: false
             remember: false
             multiple: false
@@ -251,12 +252,12 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           entity_type: node
-          entity_field: nid
-          plugin_id: numeric
-        nid_1:
-          id: nid_1
+          entity_field: created
+          plugin_id: date
+        created_1:
+          id: created_1
           table: node_field_data
-          field: nid
+          field: created
           relationship: none
           group_type: group
           admin_label: ''
@@ -264,16 +265,17 @@ display:
           value:
             min: ''
             max: ''
-            value: 'nid placeholder'
+            value: ''
+            type: date
           group: 1
           exposed: true
           expose:
-            operator_id: nid_placeholder_op
-            label: ID
+            operator_id: created_with_placeholders_op
+            label: 'Authored on'
             description: ''
             use_operator: true
-            operator: nid_1_op
-            identifier: nid_placeholder
+            operator: created_1_op
+            identifier: created_with_placeholders
             required: false
             remember: false
             multiple: false
@@ -281,9 +283,9 @@ display:
               authenticated: authenticated
               anonymous: '0'
               administrator: '0'
-            placeholder: 'nid placeholder'
-            min_placeholder: 'nid min placeholder'
-            max_placeholder: 'nid max placeholder'
+            placeholder: 'created placeholder'
+            min_placeholder: 'min placeholder'
+            max_placeholder: 'max placeholder'
           is_grouped: false
           group_info:
             label: ''
@@ -297,8 +299,8 @@ display:
             default_group_multiple: {  }
             group_items: {  }
           entity_type: node
-          entity_field: nid
-          plugin_id: numeric
+          entity_field: created
+          plugin_id: date
       sorts: {  }
       title: 'Placeholder text test'
       header: {  }
@@ -312,12 +314,12 @@ display:
         groups:
           1: AND
     cache_metadata:
-      max-age: -1
+      max-age: 0
       contexts:
-      - 'languages:language_content'
-      - 'languages:language_interface'
-      - url
-      - 'user.node_grants:view'
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - 'user.node_grants:view'
       tags: {  }
   page_1:
     display_plugin: page
@@ -328,10 +330,10 @@ display:
       display_extenders: {  }
       path: placeholder-text-test
     cache_metadata:
-      max-age: -1
+      max-age: 0
       contexts:
-      - 'languages:language_content'
-      - 'languages:language_interface'
-      - url
-      - 'user.node_grants:view'
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - 'user.node_grants:view'
       tags: {  }

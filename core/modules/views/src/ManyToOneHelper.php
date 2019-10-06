@@ -162,11 +162,9 @@ class ManyToOneHelper {
           // query optimization, INNER joins are slightly faster, so use them
           // when we know we can.
           $join = $this->getJoin();
-          $group = isset($this->handler->options['group']) ? $this->handler->options['group'] : FALSE;
-          if (isset($join) && ($group === FALSE || $this->handler->query->where[$group]['type'] == 'AND')) {
-           $join->type = 'INNER';
+          if (isset($join)) {
+            $join->type = 'INNER';
           }
-
           $this->handler->tableAlias = $this->handler->query->ensureTable($this->handler->table, $this->handler->relationship, $join);
           $this->handler->view->many_to_one_tables[$field] = $this->handler->value;
         }
@@ -310,18 +308,18 @@ class ManyToOneHelper {
           $placeholder .= '[]';
 
           if ($operator == 'IS NULL') {
-            $this->handler->query->addWhereExpression($options['group'], "$field $operator");
+            $this->handler->query->addWhereExpression(0, "$field $operator");
           }
           else {
-            $this->handler->query->addWhereExpression($options['group'], "$field $operator($placeholder)", [$placeholder => $value]);
+            $this->handler->query->addWhereExpression(0, "$field $operator($placeholder)", [$placeholder => $value]);
           }
         }
         else {
           if ($operator == 'IS NULL') {
-            $this->handler->query->addWhereExpression($options['group'], "$field $operator");
+            $this->handler->query->addWhereExpression(0, "$field $operator");
           }
           else {
-            $this->handler->query->addWhereExpression($options['group'], "$field $operator $placeholder", [$placeholder => $value]);
+            $this->handler->query->addWhereExpression(0, "$field $operator $placeholder", [$placeholder => $value]);
           }
         }
       }

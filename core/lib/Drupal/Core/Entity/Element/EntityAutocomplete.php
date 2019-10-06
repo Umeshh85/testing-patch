@@ -4,7 +4,6 @@ namespace Drupal\Core\Entity\Element;
 
 use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\Tags;
-use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityReferenceSelection\SelectionInterface;
 use Drupal\Core\Entity\EntityReferenceSelection\SelectionWithAutocreateInterface;
@@ -128,20 +127,6 @@ class EntityAutocomplete extends Textfield {
     // Store the selection settings in the key/value store and pass a hashed key
     // in the route parameters.
     $selection_settings = isset($element['#selection_settings']) ? $element['#selection_settings'] : [];
-
-    // Put entity into settings.
-    $form_object = $form_state->getFormObject();
-    if (isset($form_object) && $form_object instanceof EntityForm) {
-      $entity = $form_object->getEntity();
-      if (isset($entity)) {
-        $storage = $form_state->getStorage();
-        if (isset($storage['group'])) {
-          $entity->parent_group = $storage['group'];
-        }
-        $selection_settings['entity'] = $entity;
-      }
-    }
-
     $data = serialize($selection_settings) . $element['#target_type'] . $element['#selection_handler'];
     $selection_settings_key = Crypt::hmacBase64($data, Settings::getHashSalt());
 
@@ -311,9 +296,7 @@ class EntityAutocomplete extends Textfield {
         $multiples[] = $name . ' (' . $id . ')';
       }
       $params['@id'] = $id;
-      // Call strip_tags to clean up the label display if we are getting the
-      // list of matches from an entity reference view.
-      $form_state->setError($element, t('Multiple entities match this reference; "%multiple". Specify the one you want by appending the id in parentheses, like "@value (@id)".', ['%multiple' => strip_tags(implode('", "', $multiples))] + $params));
+      $form_state->setError($element, t('Multiple entities match this reference; "%multiple". Specify the one you want by appending the id in parentheses, like "@value (@id)".', ['%multiple' => implode('", "', $multiples)] + $params));
     }
     else {
       // Take the one and only matching entity.

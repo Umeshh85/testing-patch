@@ -261,16 +261,17 @@ class NumericFilter extends FilterPluginBase {
     if ($which == 'all' || $which == 'minmax') {
       $form['value']['min'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Min'),
+        '#title' => !$exposed ? $this->t('Min') : $this->exposedInfo()['label'],
         '#size' => 30,
         '#default_value' => $this->value['min'],
+        '#description' => !$exposed ? '' : $this->exposedInfo()['description'],
       ];
       if (!empty($this->options['expose']['min_placeholder'])) {
         $form['value']['min']['#attributes']['placeholder'] = $this->options['expose']['min_placeholder'];
       }
       $form['value']['max'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Max'),
+        '#title' => !$exposed ? $this->t('And max') : $this->t('And'),
         '#size' => 30,
         '#default_value' => $this->value['max'],
       ];
@@ -315,12 +316,24 @@ class NumericFilter extends FilterPluginBase {
     }
   }
 
+  /**
+   * Filters by operator between.
+   *
+   * @param object $field
+   *   The views field.
+   */
   protected function opBetween($field) {
-    if ($this->operator == 'between') {
-      $this->query->addWhere($this->options['group'], $field, [$this->value['min'], $this->value['max']], 'BETWEEN');
+    if (is_numeric($this->value['min']) && is_numeric($this->value['max'])) {
+      $operator = $this->operator == 'between' ? 'BETWEEN' : 'NOT BETWEEN';
+      $this->query->addWhere($this->options['group'], $field, [$this->value['min'], $this->value['max']], $operator);
     }
-    else {
-      $this->query->addWhere($this->options['group'], $field, [$this->value['min'], $this->value['max']], 'NOT BETWEEN');
+    elseif (is_numeric($this->value['min'])) {
+      $operator = $this->operator == 'between' ? '>=' : '<';
+      $this->query->addWhere($this->options['group'], $field, $this->value['min'], $operator);
+    }
+    elseif (is_numeric($this->value['max'])) {
+      $operator = $this->operator == 'between' ? '<=' : '>';
+      $this->query->addWhere($this->options['group'], $field, $this->value['max'], $operator);
     }
   }
 

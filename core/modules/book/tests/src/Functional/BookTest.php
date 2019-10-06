@@ -25,14 +25,14 @@ class BookTest extends BrowserTestBase {
   /**
    * A user with permission to view a book and access printer-friendly version.
    *
-   * @var \Drupal\user\UserInterface
+   * @var object
    */
   protected $webUser;
 
   /**
    * A user with permission to create and edit books and to administer blocks.
    *
-   * @var \Drupal\user\UserInterface
+   * @var object
    */
   protected $adminUser;
 
@@ -81,23 +81,23 @@ class BookTest extends BrowserTestBase {
     $this->drupalLogin($this->bookAuthor);
 
     // On non-node route.
-    $this->drupalGet($this->adminUser->urlInfo());
+    $this->drupalGet($this->adminUser->toUrl());
     $this->assertRaw('[route.book_navigation]=book.none');
 
     // On non-book node route.
-    $this->drupalGet($page->urlInfo());
+    $this->drupalGet($page->toUrl());
     $this->assertRaw('[route.book_navigation]=book.none');
 
     // On book node route.
-    $this->drupalGet($book_nodes[0]->urlInfo());
+    $this->drupalGet($book_nodes[0]->toUrl());
     $this->assertRaw('[route.book_navigation]=0|2|3');
-    $this->drupalGet($book_nodes[1]->urlInfo());
+    $this->drupalGet($book_nodes[1]->toUrl());
     $this->assertRaw('[route.book_navigation]=0|2|3|4');
-    $this->drupalGet($book_nodes[2]->urlInfo());
+    $this->drupalGet($book_nodes[2]->toUrl());
     $this->assertRaw('[route.book_navigation]=0|2|3|5');
-    $this->drupalGet($book_nodes[3]->urlInfo());
+    $this->drupalGet($book_nodes[3]->toUrl());
     $this->assertRaw('[route.book_navigation]=0|2|6');
-    $this->drupalGet($book_nodes[4]->urlInfo());
+    $this->drupalGet($book_nodes[4]->toUrl());
     $this->assertRaw('[route.book_navigation]=0|2|7');
   }
 
@@ -238,7 +238,10 @@ class BookTest extends BrowserTestBase {
     $block = $this->drupalPlaceBlock('book_navigation');
 
     // Give anonymous users the permission 'node test view'.
-    user_role_grant_permissions(RoleInterface::ANONYMOUS_ID, ['node test view']);
+    $edit = [];
+    $edit[RoleInterface::ANONYMOUS_ID . '[node test view]'] = TRUE;
+    $this->drupalPostForm('admin/people/permissions/' . RoleInterface::ANONYMOUS_ID, $edit, t('Save permissions'));
+    $this->assertText(t('The changes have been saved.'), "Permission 'node test view' successfully assigned to anonymous users.");
 
     // Test correct display of the block.
     $nodes = $this->createBook();
@@ -246,83 +249,6 @@ class BookTest extends BrowserTestBase {
     $this->assertText($block->label(), 'Book navigation block is displayed.');
     $this->assertText($this->book->label(), format_string('Link to book root (@title) is displayed.', ['@title' => $nodes[0]->label()]));
     $this->assertNoText($nodes[0]->label(), 'No links to individual book pages are displayed.');
-
-    // Ensure that an unpublished node does not appear in the navigation for a
-    // user without access. By unpublishing a parent page, child pages should
-    // not appear in the navigation. The node_access_test module is disabled
-    // since it interferes with this logic.
-
-    /** @var \Drupal\Core\Extension\ModuleInstaller $installer */
-    $installer = \Drupal::service('module_installer');
-    $installer->uninstall(['node_access_test']);
-    node_access_rebuild();
-
-    $nodes[0]->setPublished(FALSE);
-    $nodes[0]->save();
-
-    // Verify the user does not have access to the unpublished node.
-    $this->assertFalse($nodes[0]->access('view', $this->webUser));
-
-    // Verify the unpublished book page does not appear in the navigation.
-    $this->drupalLogin($this->webUser);
-    $this->drupalGet($nodes[0]->urlInfo());
-    $this->assertResponse(403);
-    $this->drupalGet($this->book->urlInfo());
-    $this->assertNoText($nodes[0]->getTitle(), 'Unpublished book page does not appear in the navigation for users without access.');
-    $this->assertNoText($nodes[1]->getTitle(), 'Published child page does not appear below an unpublished parent.');
-    $this->assertNoText($nodes[2]->getTitle(), 'Published child page does not appear below an unpublished parent.');
-  }
-
-  /**
-   * Tests the top-level page title setting of the book navigation block.
-   */
-  function testBookNavigationBlockWithTopLevelPageTitle() {
-    $this->drupalLogin($this->adminUser);
-
-    // Enable the block.
-    $block = $this->drupalPlaceBlock('book_navigation', ['block_mode' => 'book pages', 'top_level_title' => TRUE]);
-
-    // Give anonymous users the permission 'node test view'.
-    $edit = [];
-    $edit[RoleInterface::ANONYMOUS_ID . '[node test view]'] = TRUE;
-    $this->drupalPostForm('admin/people/permissions/' . RoleInterface::ANONYMOUS_ID, $edit, t('Save permissions'));
-    $this->assertText(t('The changes have been saved.'), "Permission 'node test view' successfully assigned to anonymous users.");
-
-    /*
-     * Create a book with three nested pages:
-     * Book
-     *  |- Node 0
-     *   |- Node 1
-     *     |- Node 2
-     */
-    $this->drupalLogin($this->bookAuthor);
-    $book = $this->createBookNode('new');
-    $pid = NULL;
-    for ($i = 0 ; $i < 3 ; ++$i) {
-      $node = $this->createBookNode($book->id(), $pid);
-      $pid = $node->id();
-    }
-    $this->drupalLogout();
-
-    // Change the book top-level title.
-    $book->title = 'Top-level node title';
-    $book->save();
-
-    // Check that the block title is the top-level page title on the book
-    // summary.
-    $this->drupalGet('node/' . $book->id());
-    $xpath = $this->buildXPathQuery('//div[@id=:block-id]/h2', [
-      ':block-id' => 'block-' . str_replace('_', '-', strtolower($block->id())),
-    ]);
-    $this->assertFieldByXPath($xpath, $book->title->value, t('Block title is the same as book top-level page title.'));
-
-    // Check that the block title is the top-level page title on a deep book
-    // page.
-    $this->drupalGet('node/' . $node->id());
-    $xpath = $this->buildXPathQuery('//div[@id=:block-id]/h2', [
-      ':block-id' => 'block-' . str_replace('_', '-', strtolower($block->id())),
-    ]);
-    $this->assertFieldByXPath($xpath, $book->title->value, t('Block title is the same as book top-level page title.'));
   }
 
   /**
@@ -440,11 +366,11 @@ class BookTest extends BrowserTestBase {
     // Tests directly deleting a book parent.
     $nodes = $this->createBook();
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet($this->book->urlInfo('delete-form'));
+    $this->drupalGet($this->book->toUrl('delete-form'));
     $this->assertRaw(t('%title is part of a book outline, and has associated child pages. If you proceed with deletion, the child pages will be relocated automatically.', ['%title' => $this->book->label()]));
     // Delete parent, and visit a child page.
-    $this->drupalPostForm($this->book->urlInfo('delete-form'), [], t('Delete'));
-    $this->drupalGet($nodes[0]->urlInfo());
+    $this->drupalPostForm($this->book->toUrl('delete-form'), [], t('Delete'));
+    $this->drupalGet($nodes[0]->toUrl());
     $this->assertResponse(200);
     $this->assertText($nodes[0]->label());
     // The book parents should be updated.
@@ -539,7 +465,7 @@ class BookTest extends BrowserTestBase {
    */
   public function testBookListing() {
     // Create a new book.
-    $nodes = $this->createBook();
+    $this->createBook();
 
     // Must be a user with 'node test view' permission since node_access_test is installed.
     $this->drupalLogin($this->webUser);
@@ -555,7 +481,7 @@ class BookTest extends BrowserTestBase {
    */
   public function testAdminBookListing() {
     // Create a new book.
-    $nodes = $this->createBook();
+    $this->createBook();
 
     // Load the book page and assert the created book title is displayed.
     $this->drupalLogin($this->adminUser);
@@ -568,7 +494,7 @@ class BookTest extends BrowserTestBase {
    */
   public function testAdminBookNodeListing() {
     // Create a new book.
-    $nodes = $this->createBook();
+    $this->createBook();
     $this->drupalLogin($this->adminUser);
 
     // Load the book page list and assert the created book title is displayed
@@ -578,29 +504,6 @@ class BookTest extends BrowserTestBase {
 
     $elements = $this->xpath('//table//ul[@class="dropbutton"]/li/a');
     $this->assertEqual($elements[0]->getText(), 'View', 'View link is found from the list.');
-    $this->assertEqual(count($nodes), count($elements), 'All the book pages are displayed on the book outline page.');
-
-    // Unpublish a book in the hierarchy.
-    $nodes[0]->setPublished(FALSE);
-    $nodes[0]->save();
-
-    // Node should still appear on the outline for admins.
-    $this->drupalGet('admin/structure/book/' . $this->book->id());
-    $elements = $this->xpath('//table//ul[@class="dropbutton"]/li/a');
-    $this->assertEqual(count($nodes), count($elements), 'All the book pages are displayed on the book outline page.');
-
-    // Saving a book page not as the current version shouldn't effect the book.
-    $old_title = $nodes[1]->getTitle();
-    $new_title = $this->randomGenerator->name();
-    $nodes[1]->isDefaultRevision(FALSE);
-    $nodes[1]->setNewRevision(TRUE);
-    $nodes[1]->setTitle($new_title);
-    $nodes[1]->save();
-    $this->drupalGet('admin/structure/book/' . $this->book->id());
-    $elements = $this->xpath('//table//ul[@class="dropbutton"]/li/a');
-    $this->assertEqual(count($nodes), count($elements), 'All the book pages are displayed on the book outline page.');
-    $this->assertNoText($new_title, 'The revision that is not the default revision does not appear.');
-    $this->assertText($old_title, 'The default revision title appears.');
   }
 
   /**

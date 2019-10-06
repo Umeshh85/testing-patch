@@ -550,8 +550,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         $newContent[effect.showEffect](effect.showSpeed);
       }
 
-      var alreadyAttached = ajax.$form && ajax.$form.has($newContent).length;
-      if (!alreadyAttached && $newContent.parents('html').length) {
+      if ($newContent.parents('html').length) {
         $newContent.each(function (index, element) {
           if (element.nodeType === Node.ELEMENT_NODE) {
             Drupal.attachBehaviors(element, settings);
@@ -576,6 +575,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
     alert: function alert(ajax, response, status) {
       window.alert(response.text, response.title);
+    },
+    announce: function announce(ajax, response) {
+      if (response.priority) {
+        Drupal.announce(response.text, response.priority);
+      } else {
+        Drupal.announce(response.text);
+      }
     },
     redirect: function redirect(ajax, response, status) {
       window.location = response.url;

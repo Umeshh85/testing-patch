@@ -88,7 +88,6 @@ class BookNavigationBlock extends BlockBase implements ContainerFactoryPluginInt
   public function defaultConfiguration() {
     return [
       'block_mode' => "all pages",
-      'top_level_title' => FALSE,
     ];
   }
 
@@ -106,15 +105,7 @@ class BookNavigationBlock extends BlockBase implements ContainerFactoryPluginInt
       '#options' => $options,
       '#default_value' => $this->configuration['block_mode'],
       '#description' => $this->t("If <em>Show block on all pages</em> is selected, the block will contain the automatically generated menus for all of the site's books. If <em>Show block only on book pages</em> is selected, the block will contain only the one menu corresponding to the current page's book. In this case, if the current page is not in a book, no block will be displayed. The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
-    ];
-    $form['top_level_title'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Use top-level page title as block title'),
-      '#default_value' => $this->configuration['top_level_title'],
-      '#states' => [
-        'visible' => [':input[name="settings[book_block_mode]"]' => ['value' => 'book pages']],
-      ]
-    ];
+      ];
 
     return $form;
   }
@@ -124,7 +115,6 @@ class BookNavigationBlock extends BlockBase implements ContainerFactoryPluginInt
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
     $this->configuration['block_mode'] = $form_state->getValue('book_block_mode');
-    $this->configuration['top_level_title'] = $form_state->getValue('top_level_title');
   }
 
   /**
@@ -181,9 +171,6 @@ class BookNavigationBlock extends BlockBase implements ContainerFactoryPluginInt
         $data = array_shift($tree);
         $below = $this->bookManager->bookTreeOutput($data['below']);
         if (!empty($below)) {
-          if ($this->configuration['top_level_title']) {
-            $below['#title'] = $data['link']['title'];
-          }
           return $below;
         }
       }

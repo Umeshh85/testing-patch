@@ -273,12 +273,10 @@ class Node extends DrupalSqlBase {
 
       // Add every column in the field's schema.
       foreach ($columns as $column) {
-        // Use a prefixed alias to prevent accidental collisions with reserved
-        // words in underlying database.
-        $query->addField('t', $field['field_name'] . '_' . $column, 'migrate_' . $column);
+        $query->addField('t', $field['field_name'] . '_' . $column, $column);
       }
 
-      $data = $query
+      return $query
         // This call to isNotNull() is a kludge which relies on the convention
         // that field schemas usually define their most important column first.
         // A better way would be to allow field plugins to alter the query
@@ -288,18 +286,6 @@ class Node extends DrupalSqlBase {
         ->condition('vid', $node->getSourceProperty('vid'))
         ->execute()
         ->fetchAllAssoc('delta');
-
-      // Remove the unwanted alias prefixes.
-      foreach ($data as $i => $row) {
-        foreach ($row as $col => $value) {
-          if (is_string($col) && $col != 'delta') {
-            $fixed_col = substr($col, 8);
-            unset($data[$i][$col]);
-            $data[$i][$fixed_col] = $value;
-          }
-        }
-      }
-      return $data;
     }
     else {
       return [];

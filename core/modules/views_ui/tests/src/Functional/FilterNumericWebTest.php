@@ -108,13 +108,11 @@ class FilterNumericWebTest extends UITestBase {
     $this->assertConfigSchemaByName('views.view.test_view');
 
     $this->drupalPostForm(NULL, [], t('Update preview'));
-    // Check the field (wrapper) label.
-    $this->assertSession()->elementTextContains('css', 'fieldset#edit-age-wrapper', 'Age between');
-    // Check the min/max labels.
-    $this->assertSession()->responseContains('<label for="edit-age-max">Max</label>');
-    $this->assertSession()->responseContains('<label for="edit-age-min">Min</label>');
+    // Check the max field label.
+    $this->assertRaw('<label for="edit-age-max">And</label>', 'Max field label found');
+    $this->assertRaw('<label for="edit-age-min">Age between</label>', 'Min field label found');
     // Check that the description is shown in the right place.
-    self::assertEquals(trim($this->cssSelect('#edit-age-wrapper--description')[0]->getText()), 'Description of the exposed filter');
+    $this->assertEqual(trim($this->cssSelect('.form-item-age-min .description')[0]->getText()), 'Description of the exposed filter');
   }
 
 }

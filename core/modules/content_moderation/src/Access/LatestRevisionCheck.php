@@ -58,12 +58,6 @@ class LatestRevisionCheck implements AccessInterface {
     if ($this->moderationInfo->hasPendingRevision($entity)) {
       // Check the global permissions first.
       $access_result = AccessResult::allowedIfHasPermissions($account, ['view latest version', 'view any unpublished content']);
-
-      // Check per bundle unpublished access.
-      if (!$access_result->isAllowed()) {
-        $per_bundle_access = AccessResult::allowedIfHasPermissions($account, ['view latest version', "view any unpublished {$entity->getEntityTypeId()}:{$entity->bundle()} content"]);
-        $access_result = $access_result->orIf($per_bundle_access);
-      }
       if (!$access_result->isAllowed()) {
         // Check entity owner access.
         $owner_access = AccessResult::allowedIfHasPermissions($account, ['view latest version', 'view own unpublished content']);

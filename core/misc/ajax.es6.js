@@ -1254,12 +1254,9 @@
       }
 
       // Attach all JavaScript behaviors to the new content, if it was
-      // successfully added to the page, and the elements not part of a larger
-      // form (in which case they'll be processed all at once in
-      // `Drupal.Ajax.prototype.success`). The HTML parent check allows
+      // successfully added to the page, this if statement allows
       // `#ajax['wrapper']` to be optional.
-      const alreadyAttached = ajax.$form && ajax.$form.has($newContent).length;
-      if (!alreadyAttached && $newContent.parents('html').length) {
+      if ($newContent.parents('html').length) {
         // Attach behaviors to all element nodes.
         $newContent.each((index, element) => {
           if (element.nodeType === Node.ELEMENT_NODE) {
@@ -1337,6 +1334,26 @@
      */
     alert(ajax, response, status) {
       window.alert(response.text, response.title);
+    },
+
+    /**
+     * Command to provide triggers audio UAs to read the supplied text.
+     *
+     * @param {Drupal.Ajax} [ajax]
+     *   {@link Drupal.Ajax} object created by {@link Drupal.ajax}.
+     * @param {object} response
+     *   The JSON response from the Ajax request.
+     * @param {string} [response.text]
+     *   The text that will be read.
+     * @param {string} [response.priority]
+     *   An optional priority that will be used for the announcement.
+     */
+    announce(ajax, response) {
+      if (response.priority) {
+        Drupal.announce(response.text, response.priority);
+      } else {
+        Drupal.announce(response.text);
+      }
     },
 
     /**

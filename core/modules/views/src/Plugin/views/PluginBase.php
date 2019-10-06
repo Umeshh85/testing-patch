@@ -353,12 +353,6 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
 
     $twig_tokens = [];
     foreach ($tokens as $token => $replacement) {
-      // If there are contextual filter tokens, skip them as they are not Twig
-      // compatible.
-      if ((strpos($token, '%') === 0) || (strpos($token, '!') === 0)) {
-        continue;
-      }
-
       // Twig wants a token replacement array stripped of curly-brackets.
       // Some Views tokens come with curly-braces, others do not.
       // @todo: https://www.drupal.org/node/2544392

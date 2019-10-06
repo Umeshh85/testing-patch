@@ -14,7 +14,7 @@ use Drupal\Core\Entity\EntityDescriptionInterface;
  *   handlers = {
  *     "access" = "\Drupal\Core\Entity\EntityAccessControlHandler",
  *     "form" = {
- *       "default" = "Drupal\Core\Entity\BundleEntityFormBase",
+ *       "default" = "\Drupal\Core\Entity\BundleEntityFormBase",
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",

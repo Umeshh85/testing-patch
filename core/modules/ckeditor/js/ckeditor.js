@@ -27,17 +27,8 @@
         if (trigger === 'serialize') {
           editor.updateElement();
         } else {
-          // Try to destroy the CKEditor instance; this may fail if the CKEditor
-          // instance hasn't finished initializing yet, because initializing is
-          // asynchronous (by necessity, because it needs to load plugins, which
-          // themselves may need to load more things etc).
-          try {
-            editor.destroy();
-            element.removeAttribute('contentEditable');
-          }
-          catch (e) {
-            // Empty.
-          }
+          editor.destroy();
+          element.removeAttribute('contentEditable');
         }
       }
       return !!editor;
@@ -201,8 +192,6 @@
   $(window).on('hashchange.ckeditor', redirectTextareaFragmentToCKEditorInstance);
 
   CKEDITOR.config.autoGrow_onStartup = true;
-
-  CKEDITOR.config.autoGrow_maxHeight = 0.7 * window.innerHeight;
 
   CKEDITOR.timestamp = drupalSettings.ckeditor.timestamp;
 

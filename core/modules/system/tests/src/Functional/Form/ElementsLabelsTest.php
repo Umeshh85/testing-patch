@@ -114,7 +114,6 @@ class ElementsLabelsTest extends BrowserTestBase {
   public function testFormDescriptions() {
     $this->drupalGet('form_test/form-descriptions');
 
-    // Text field form elements.
     // Check #description placement with #description_display='after'.
     $field_id = 'edit-form-textfield-test-description-after';
     $description_id = $field_id . '--description';
@@ -133,27 +132,6 @@ class ElementsLabelsTest extends BrowserTestBase {
     $field_id = 'edit-form-textfield-test-description-invisible';
     $description_id = $field_id . '--description';
     $elements = $this->xpath('//input[@id="' . $field_id . '" and @aria-describedby="' . $description_id . '"]/following-sibling::div[contains(@class, "visually-hidden")]');
-    $this->assertTrue(isset($elements[0]), t('Properly renders the #description element visually-hidden.'));
-
-    // Datetime form elements.
-    // Check #description placement with #description_display='after'.
-    $field_id = 'edit-form-datetime-test-description-after-date';
-    $description_id = 'edit-form-datetime-test-description-after--description';
-    $elements = $this->xpath('//input[@id="' . $field_id . '" and @aria-describedby="' . $description_id . '"]/ancestor::div/following-sibling::div[@id="' . $description_id . '"]');
-    $this->assertTrue(isset($elements[0]), t('Properly places the #description element after the form item.'));
-
-    // Check #description placement with #description_display='before'.
-    $field_id = 'edit-form-datetime-test-description-before-date';
-    $description_id = 'edit-form-datetime-test-description-before--description';
-    $elements = $this->xpath('//input[@id="' . $field_id . '" and @aria-describedby="' . $description_id . '"]/ancestor::div/preceding-sibling::div[@id="' . $description_id . '"]');
-    $this->assertTrue(isset($elements[0]), t('Properly places the #description element before the form item.'));
-
-    // Check if the class is 'visually-hidden' on the form element description
-    // for the option with #description_display='invisible' and also check that
-    // the description is placed after the form element.
-    $field_id = 'edit-form-datetime-test-description-invisible-date';
-    $description_id = 'edit-form-datetime-test-description-invisible--description';
-    $elements = $this->xpath('//input[@id="' . $field_id . '" and @aria-describedby="' . $description_id . '"]/ancestor::div/following-sibling::div[@id="' . $description_id . '" and contains(@class, "visually-hidden")]');
     $this->assertTrue(isset($elements[0]), t('Properly renders the #description element visually-hidden.'));
   }
 

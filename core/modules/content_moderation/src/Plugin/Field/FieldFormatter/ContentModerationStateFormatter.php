@@ -58,13 +58,7 @@ class ContentModerationStateFormatter extends FormatterBase implements Container
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    if ( $items->getFieldDefinition()->getTargetEntityTypeId() == 'content_moderation_state') {
-      $workflows = $items->getParent()->getValue()->get('workflow')->referencedEntities();
-      $workflow = reset($workflows);
-    }
-    else {
-      $workflow = $this->moderationInformation->getWorkflowForEntity($items->getEntity());
-    }
+    $workflow = $this->moderationInformation->getWorkflowForEntity($items->getEntity());
     foreach ($items as $delta => $item) {
       $elements[$delta] = [
         '#markup' => $workflow->getTypePlugin()->getState($item->value)->label(),
@@ -77,7 +71,7 @@ class ContentModerationStateFormatter extends FormatterBase implements Container
    * {@inheritdoc}
    */
   public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    return $field_definition->getName() === 'moderation_state';
+    return $field_definition->getName() === 'moderation_state' && $field_definition->getTargetEntityTypeId() !== 'content_moderation_state';
   }
 
 }

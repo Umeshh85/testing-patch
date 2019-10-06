@@ -24,10 +24,10 @@ classList:
 
 ckeditor:
   remote: https://github.com/ckeditor/ckeditor-dev
-  version: "4.10.1"
+  version: "4.11.4"
   license:
     name: GNU-GPL-2.0-or-later
-    url: https://github.com/ckeditor/ckeditor-dev/blob/4.10.1/LICENSE.md
+    url: https://github.com/ckeditor/ckeditor-dev/blob/4.11.4/LICENSE.md
     gpl-compatible: true
   js:
     assets/vendor/ckeditor/ckeditor.js: { preprocess: false, minified: true }
@@ -232,6 +232,14 @@ drupal.machine-name:
     - core/drupal
     - core/drupalSettings
     - core/drupal.form
+
+drupal.message:
+  version: VERSION
+  js:
+    misc/message.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.announce
 
 drupal.progress:
   version: VERSION
@@ -495,7 +503,6 @@ jquery.ui.checkboxradio:
   version: *jquery_ui_version
   license: *jquery_ui_license
   js:
-    assets/vendor/jquery.ui/ui/escape-selector-min.js: { minified: true }
     assets/vendor/jquery.ui/ui/widgets/checkboxradio-min.js: { minified: true }
   css:
     component:
@@ -762,8 +769,6 @@ jquery.ui.selectmenu:
   version: *jquery_ui_version
   license: *jquery_ui_license
   js:
-    assets/vendor/jquery.ui/ui/form-reset-mixin-min.js: { minified: true }
-    assets/vendor/jquery.ui/ui/escape-selector-min.js: { minified: true }
     assets/vendor/jquery.ui/ui/widgets/selectmenu-min.js: { minified: true }
   css:
     component:
@@ -815,7 +820,6 @@ jquery.ui.tabs:
   version: *jquery_ui_version
   license: *jquery_ui_license
   js:
-    assets/vendor/jquery.ui/ui/escape-selector-min.js: { minified: true }
     assets/vendor/jquery.ui/ui/widgets/tabs-min.js: { minified: true }
   css:
     component:

@@ -4,7 +4,6 @@ namespace Drupal\Tests\content_moderation\Kernel;
 
 use Drupal\content_moderation\Permissions;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\simpletest\ContentTypeCreationTrait;
 use Drupal\workflows\Entity\Workflow;
 
 /**
@@ -13,8 +12,6 @@ use Drupal\workflows\Entity\Workflow;
  * @group content_moderation
  */
 class ContentModerationPermissionsTest extends KernelTestBase {
-
-  use ContentTypeCreationTrait;
 
   /**
    * Modules to install.
@@ -25,12 +22,6 @@ class ContentModerationPermissionsTest extends KernelTestBase {
     'workflows',
     'content_moderation',
     'workflow_type_test',
-    'entity_test',
-    'field',
-    'node',
-    'user',
-    'text',
-    'system',
   ];
 
   /**
@@ -39,15 +30,6 @@ class ContentModerationPermissionsTest extends KernelTestBase {
   protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('workflow');
-    $this->installEntitySchema('entity_test_no_bundle');
-    $this->installEntitySchema('entity_test_rev');
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('user');
-    $this->installConfig(['node']);
-
-    // Add 2 node types.
-    $this->createContentType(['type' => 'foo', 'name' => 'Foo']);
-    $this->createContentType(['type' => 'bar', 'name' => 'Bar']);
   }
 
   /**
@@ -55,16 +37,9 @@ class ContentModerationPermissionsTest extends KernelTestBase {
    *
    * @dataProvider permissionsTestCases
    */
-  public function testPermissions($workflow_definition, $transition_permissions, $unpublished_permissions = []) {
-    /** @var \Drupal\workflows\WorkflowInterface $workflow */
-    $workflow = Workflow::create($workflow_definition)->save();
-
-    /** @var \Drupal\content_moderation\Permissions $permission_callback */
-    $permission_callback = $this->container->get('class_resolver')
-      ->getInstanceFromDefinition(Permissions::class);
-
-    $this->assertEquals($transition_permissions, $permission_callback->transitionPermissions());
-    $this->assertEquals($unpublished_permissions, $permission_callback->perBundleUnpublishedPermissions());
+  public function testPermissions($workflow, $permissions) {
+    Workflow::create($workflow)->save();
+    $this->assertEquals($permissions, (new Permissions())->transitionPermissions());
   }
 
   /**
@@ -80,22 +55,6 @@ class ContentModerationPermissionsTest extends KernelTestBase {
           'id' => 'simple_workflow',
           'label' => 'Simple Workflow',
           'type' => 'content_moderation',
-          'type_settings' => [
-            'entity_types' => [
-              // Types without per-bundle permission granularity will not
-              // receive per-bundle permissions.
-              'entity_test_no_bundle' => [
-                'entity_test_no_bundle',
-              ],
-              'entity_test_rev' => [
-                'entity_test_rev',
-              ],
-              'node' => [
-                'foo',
-                'bar',
-              ],
-            ],
-          ],
         ],
         [
           'use simple_workflow transition publish' => [
@@ -103,14 +62,6 @@ class ContentModerationPermissionsTest extends KernelTestBase {
           ],
           'use simple_workflow transition create_new_draft' => [
             'title' => '<em class="placeholder">Simple Workflow</em> workflow: Use <em class="placeholder">Create New Draft</em> transition.',
-          ],
-        ],
-        [
-          'view any unpublished node:bar content' => [
-            'title' => '<em class="placeholder">Content</em>: View any unpublished <em class="placeholder">Bar</em> content',
-          ],
-          'view any unpublished node:foo content' => [
-            'title' => '<em class="placeholder">Content</em>: View any unpublished <em class="placeholder">Foo</em> content',
           ],
         ],
       ],
@@ -138,7 +89,6 @@ class ContentModerationPermissionsTest extends KernelTestBase {
             ],
           ],
         ],
-        [],
         [],
       ],
     ];

@@ -45,8 +45,6 @@ class LatestRevisionCheckTest extends UnitTestCase {
    *   The class of the entity to mock.
    * @param string $entity_type
    *   The machine name of the entity to mock.
-   * @param string $bundle
-   *   The bundle ID.
    * @param bool $has_pending_revision
    *   Whether this entity should have a pending revision in the system.
    * @param array $account_permissions
@@ -59,7 +57,7 @@ class LatestRevisionCheckTest extends UnitTestCase {
    *
    * @dataProvider accessSituationProvider
    */
-  public function testLatestAccessPermissions($entity_class, $entity_type, $bundle, $has_pending_revision, array $account_permissions, $is_owner, $result_class) {
+  public function testLatestAccessPermissions($entity_class, $entity_type, $has_pending_revision, array $account_permissions, $is_owner, $result_class) {
 
     /** @var \Drupal\Core\Session\AccountInterface $account */
     $account = $this->prophesize(AccountInterface::class);
@@ -67,7 +65,6 @@ class LatestRevisionCheckTest extends UnitTestCase {
       'view latest version',
       'view any unpublished content',
       'view own unpublished content',
-      "view any unpublished $entity_type:$bundle content",
     ];
     foreach ($possible_permissions as $permission) {
       $account->hasPermission($permission)->willReturn(in_array($permission, $account_permissions));
@@ -79,8 +76,6 @@ class LatestRevisionCheckTest extends UnitTestCase {
     $entity->getCacheContexts()->willReturn([]);
     $entity->getCacheTags()->willReturn([]);
     $entity->getCacheMaxAge()->willReturn(0);
-    $entity->getEntityTypeId()->willReturn($entity_type);
-    $entity->bundle()->willReturn($bundle);
     if (is_subclass_of($entity_class, EntityOwnerInterface::class)) {
       $entity->getOwnerId()->willReturn($is_owner ? 42 : 3);
     }
@@ -111,31 +106,27 @@ class LatestRevisionCheckTest extends UnitTestCase {
   public function accessSituationProvider() {
     return [
       // Node with global permissions and latest version.
-      [Node::class, 'node', 'article', TRUE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultAllowed::class],
+      [Node::class, 'node', TRUE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultAllowed::class],
       // Node with global permissions and no latest version.
-      [Node::class, 'node', 'article', FALSE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultForbidden::class],
+      [Node::class, 'node', FALSE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultForbidden::class],
       // Node with own content permissions and latest version.
-      [Node::class, 'node', 'article', TRUE, ['view latest version', 'view own unpublished content'], TRUE, AccessResultAllowed::class],
+      [Node::class, 'node', TRUE, ['view latest version', 'view own unpublished content'], TRUE, AccessResultAllowed::class],
       // Node with own content permissions and no latest version.
-      [Node::class, 'node', 'article', FALSE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultForbidden::class],
+      [Node::class, 'node', FALSE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultForbidden::class],
       // Node with own content permissions and latest version, but no perms to
       // view latest version.
-      [Node::class, 'node', 'article', TRUE, ['view own unpublished content'], TRUE, AccessResultNeutral::class],
+      [Node::class, 'node', TRUE, ['view own unpublished content'], TRUE, AccessResultNeutral::class],
       // Node with own content permissions and no latest version, but no perms
       // to view latest version.
-      [Node::class, 'node', 'article', TRUE, ['view own unpublished content'], FALSE, AccessResultNeutral::class],
-      // Node with bundle-specific permissions.
-      [Node::class, 'node', 'article', TRUE, ['view latest version', 'view any unpublished node:article content'], FALSE, AccessResultAllowed::class],
-      // Node with bundle-specific permissions, but no permission to view latest version.
-      [Node::class, 'node', 'article', TRUE, ['view any unpublished node:article content'], FALSE, AccessResultNeutral::class],
+      [Node::class, 'node', TRUE, ['view own unpublished content'], FALSE, AccessResultNeutral::class],
       // Block with pending revision, and permissions to view any.
-      [BlockContent::class, 'block_content', 'basic', TRUE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultAllowed::class],
+      [BlockContent::class, 'block_content', TRUE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultAllowed::class],
       // Block with no pending revision.
-      [BlockContent::class, 'block_content', 'basic', FALSE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultForbidden::class],
+      [BlockContent::class, 'block_content', FALSE, ['view latest version', 'view any unpublished content'], FALSE, AccessResultForbidden::class],
       // Block with pending revision, but no permission to view any.
-      [BlockContent::class, 'block_content', 'basic', TRUE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultNeutral::class],
+      [BlockContent::class, 'block_content', TRUE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultNeutral::class],
       // Block with no pending revision.
-      [BlockContent::class, 'block_content', 'basic', FALSE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultForbidden::class],
+      [BlockContent::class, 'block_content', FALSE, ['view latest version', 'view own unpublished content'], FALSE, AccessResultForbidden::class],
     ];
   }
 
