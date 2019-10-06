@@ -18,10 +18,6 @@
         "autoloader-suffix": "Drupal8"
     },
     "extra": {
-      "enable-patching": true,
-      "patchLevel": {
-        "drupal/core": "-p2"
-      },
         "_readme": [
             "By default Drupal loads the autoloader from ./vendor/autoload.php.",
             "To change the autoloader you can edit ./autoload.php.",
@@ -46,11 +42,11 @@
             "modules/custom/{$name}": ["type:drupal-custom-module"],
             "themes/custom/{$name}": ["type:drupal-custom-theme"]
         },
-      "patches": {
-        "drupal/redirect": {
-          "Issue 2879648 (56): Does not work for path alias": "https://www.drupal.org/files/issues/2019-09-05/redirect-does_not_work_for_path_alias-2879648-56.patch"
+        "patches": {
+          "drupal/redirect": {
+            "Issue 2879648 (56): Does not work for path alias": "https://www.drupal.org/files/issues/2019-09-05/redirect-does_not_work_for_path_alias-2879648-56.patch"
+          }
         }
-      }
     },
     "autoload": {
         "psr-4": {
