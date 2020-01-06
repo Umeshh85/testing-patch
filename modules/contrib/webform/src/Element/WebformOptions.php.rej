@@ -1,0 +1,19 @@
+***************
+*** 34,41 ****
+        '#min_items' => 3,
+        '#empty_items' => 1,
+        '#add_more_items' => 1,
+-       '#options_value_maxlength' => 500,
+-       '#options_text_maxlength' => 500,
+        '#options_description' => FALSE,
+        '#options_description_maxlength' => NULL,
+        '#process' => [
+--- 34,41 ----
+        '#min_items' => 3,
+        '#empty_items' => 1,
+        '#add_more_items' => 1,
++       '#options_value_maxlength' => 5000,
++       '#options_text_maxlength' => 5000,
+        '#options_description' => FALSE,
+        '#options_description_maxlength' => NULL,
+        '#process' => [

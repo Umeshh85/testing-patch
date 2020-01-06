@@ -1,0 +1,15 @@
+diff --git a/modules/contrib/webform/src/Element/WebformOptions.php b/modules/contrib/webform/src/Element/WebformOptions.php
+index 1e0b3a72..b4eaf7cf 100644
+--- a/modules/contrib/webform/src/Element/WebformOptions.php
++++ b/modules/contrib/webform/src/Element/WebformOptions.php
+@@ -34,8 +34,8 @@ class WebformOptions extends FormElement {
+       '#min_items' => 3,
+       '#empty_items' => 1,
+       '#add_more_items' => 1,
+-      '#options_value_maxlength' => 500,
+-      '#options_text_maxlength' => 500,
++      '#options_value_maxlength' => 5000,
++      '#options_text_maxlength' => 5000,
+       '#options_description' => FALSE,
+       '#options_description_maxlength' => NULL,
+       '#process' => [
